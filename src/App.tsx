@@ -3,24 +3,13 @@ import TopBar from './components/TopBar';
 import Schedule from './components/Schedule';
 import MainTimer from './components/MainTimer';
 import BottomBar from './components/BottomBar';
+import Timer from './components/Timer';
 
 function App() {
-
     
     return (
         <>
-            {/* Top Bar */}
-            <TopBar />
-
-            {/* Left Box */}
-            <Schedule />
-            
-            
-            {/* Right Box*/}
-            <MainTimer />
-
-            {/* Bottom Bar */}
-            <BottomBar />
+            <Timer targetName={"Queueing"} targetDate={new Date("October 24, 2023 21:30:00")}/>
         </>
     );
 }

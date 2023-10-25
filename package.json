@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tater-archives/react-use-interval": "^1.0.2",
+    "date-fns": "^2.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tba-api-client": "^1.1.1"
