@@ -9,7 +9,7 @@ function App() {
     
     return (
         <>
-            <Timer targetName={"Queueing"} targetDate={new Date("October 24, 2023 21:30:00")}/>
+            <Timer targetName={"Queueing"} targetDate={new Date("October 25, 2023 21:30:00")}/>
         </>
     );
 }
