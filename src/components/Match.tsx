@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 interface MatchInfo {
     matchName: string;
     red1: number;
@@ -13,7 +15,7 @@ interface MatchInfo {
 
 function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: number}) {
     return (
-        <div className="grid grid-cols-5 grid-rows-2">
+        <div className="grid grid-cols-5 grid-rows-2 text-2xl">
             <div className="row-span-2 bg-gray-400">
                 <p>{matchInfo.matchName}</p>
             </div>
@@ -42,8 +44,8 @@ function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: numb
                 </div>
             </div>
             <div className="row-span-2 bg-gray-400">
-                {matchInfo.queue && <p>Q {matchInfo.queue.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>}
-                {matchInfo.matchStart && <p>S {matchInfo.matchStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>}
+                {matchInfo.queue && <p>Q {format(matchInfo.queue, "h:m")}</p>}
+                {matchInfo.matchStart && <p>S {format(matchInfo.matchStart, "h:m")}</p>}
             </div>
         </div>
     );

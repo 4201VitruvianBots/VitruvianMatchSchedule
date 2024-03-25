@@ -6,6 +6,7 @@ import EditableButton from './components/EditableButton';
 import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Match from './components/Match';
+import Timer from './components/Timer';
 
 dayjs.extend(relativeTime);
 
@@ -69,8 +70,10 @@ function App() {
                         <Match matchInfo={testMatchInfo} teamNumber={4201}/>
                     </div>
                     <div className="w-0.5 bg-gray-500" />
-                    <div>
-                        
+                    <div className="text-3xl text-center space-y-5">
+                        <p className="font-bold">Qual 1</p>
+                        <Timer targetName="Queuing" targetDate={dayjs().add(5, "minutes").toDate()}/>
+                        <Timer targetName="Match starts" targetDate={dayjs().add(5, "minutes").toDate()}/>
                     </div>
                 </div>
                 
