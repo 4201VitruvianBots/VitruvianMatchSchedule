@@ -11,7 +11,11 @@ function Timer({targetName, targetDate}: {
     const [secondsLeft, setSecondsLeft] = useState(0);
     const [minutesLeft, setMinutesLeft] = useState(0);
     const [hoursLeft, setHoursLeft] = useState(0);
-
+    
+    const numberTo2DigitString = (num: number) => {
+        return num < 10 ? `0${num}` : `${num}`;
+    }
+    
     useInterval(() => {
         setCurrentDate(new Date());
         const newDeltaTime = targetDate.valueOf() - currentDate.valueOf();
@@ -29,7 +33,13 @@ function Timer({targetName, targetDate}: {
     
     return <>
         <p>{targetName} at {format(targetDate, "h:mm a")}</p>
-        <p className="text-8xl">{hoursLeft} : {minutesLeft} : {secondsLeft}</p>
+        <div className="flex space-x-5">
+            <div className="text-8xl bg-gray-200 p-5 w-36">{hoursLeft}</div>
+            <p className="text-8xl">:</p>
+            <div className="text-8xl bg-gray-200 p-5 w-36">{numberTo2DigitString(minutesLeft)}</div>
+            <p className="text-8xl">:</p>
+            <div className="text-8xl bg-gray-200 p-5 w-36">{numberTo2DigitString(secondsLeft)}</div>
+        </div>
     </>
 }
 

@@ -16,7 +16,7 @@ interface MatchInfo {
 function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: number}) {
     return (
         <div className="grid grid-cols-5 grid-rows-2 text-2xl">
-            <div className="row-span-2 bg-gray-400">
+            <div className="row-span-2 bg-gray-400 p-2">
                 <p>{matchInfo.matchName}</p>
             </div>
             <div>
@@ -43,9 +43,9 @@ function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: numb
                     <p className={teamNumber == matchInfo.blue3 ? "font-bold" : ""}>{matchInfo.blue3}</p>
                 </div>
             </div>
-            <div className="row-span-2 bg-gray-400">
-                {matchInfo.queue && <p>Q {format(matchInfo.queue, "h:m")}</p>}
-                {matchInfo.matchStart && <p>S {format(matchInfo.matchStart, "h:m")}</p>}
+            <div className="row-span-2 bg-gray-400 p-2">
+                {matchInfo.queue && <p>Q {format(matchInfo.queue, "h:mm")}</p>}
+                {matchInfo.matchStart && <p>S {format(matchInfo.matchStart, "h:mm")}</p>}
             </div>
         </div>
     );
