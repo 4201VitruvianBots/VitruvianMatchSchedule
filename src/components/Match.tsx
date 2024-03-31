@@ -14,7 +14,14 @@ interface MatchInfo {
     matchStart: Date | undefined;
 }
 
-function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: number}) {
+function Match({matchInfo, teamNumber, delayMins} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number}) {
+    // Shift the time by the delay
+    if (matchInfo.matchStart) {
+        matchInfo.matchStart.setMinutes(matchInfo.matchStart.getMinutes() + (delayMins / 2));
+    }
+    if (matchInfo.queue) {
+        matchInfo.queue.setMinutes(matchInfo.queue.getMinutes() + (delayMins / 2));
+    }
     return (
         <div className="grid grid-cols-5 grid-rows-2 text-2xl">
             <div className="row-span-2 bg-gray-400 p-2">
@@ -45,8 +52,8 @@ function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: numb
                 </div>
             </div>
             <div className="row-span-2 bg-gray-400 p-2">
-                {matchInfo.queue && <p>Q {format(matchInfo.queue, "h:mm")}</p>}
-                {matchInfo.matchStart && <p>S {format(matchInfo.matchStart, "h:mm")}</p>}
+                {matchInfo.queue && <p>Queuing at {format(matchInfo.queue, "h:mm a")}</p>}
+                {matchInfo.matchStart && <p>Match starts at {format(matchInfo.matchStart, "h:mm a")}</p>}
             </div>
         </div>
     );

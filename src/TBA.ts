@@ -1,3 +1,8 @@
+import * as dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
+
 const apiKey = "hRJWOPNWjFsFzkkAUyNgHVKXocbvusMIRPW0sAbP3dtVfKy8tgaEWuZAo833zfEX";
 
 interface EventInfo {
@@ -76,6 +81,7 @@ function getAllEvents() {
     }).then((res) => res.json());
     return events.then((eventList) => {
         return eventList
+            .filter((event: Event) => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())
             .map((event: Event) => {
                 return {
                     eventName: event.name,
