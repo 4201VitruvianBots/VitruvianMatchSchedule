@@ -1,12 +1,13 @@
 import './index.css';
-import { useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import 'react-material-symbols/rounded';
 import { MaterialSymbol } from 'react-material-symbols';
 import EditableButton from './components/EditableButton';
 import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import Match from './components/Match';
+import Match, { MatchInfo } from './components/Match';
 import Timer from './components/Timer';
+import { getTeamMatches } from './TBA';
 
 dayjs.extend(relativeTime);
 
@@ -17,21 +18,18 @@ function App() {
     const [lastRefresh, setLastRefresh] = useState(new Date());
     const refreshMessage = dayjs(lastRefresh).fromNow();
     
+    const [teamMatches, setTeamMatches] = useState<ReactNode[]>([]);
+    
+    useEffect(() => {
+        getTeamMatches(4501, "2024nvlv").then((matches) => {
+            const matchElements = matches.map((match: MatchInfo) => <Match matchInfo={match} teamNumber={4501} />);
+            setTeamMatches(matchElements);
+        });
+    }, []);
+    
     const refreshData = () => {
         setLastRefresh(new Date());
     }
-    
-    const testMatchInfo = {
-        matchName: "Qual 1",
-        red1: 4201,
-        red2: 4202,
-        red3: 4203,
-        blue1: 4204,
-        blue2: 4205,
-        blue3: 4206,
-        queue: new Date(),
-        matchStart: new Date(),
-    };
     
     return (
         <>
@@ -48,6 +46,7 @@ function App() {
                             <h1 className="text-4xl p-5">Event</h1>
                             
                             <h1 className="text-4xl p-5">Team Number</h1>
+                            <input className="bg-gray-200 text-4xl" type="number"></input>
                         </div>
                     </div>
                 </div>
@@ -63,11 +62,7 @@ function App() {
                 
                 <div className="p-8 gap-8 grid grid-cols-[1fr_auto_1fr] min-h-0">
                     <div className="space-y-5 overflow-y-auto">
-                        <Match matchInfo={testMatchInfo} teamNumber={4201}/>
-                        <p className="text-2xl">︙ 9 matches</p>
-                        <Match matchInfo={testMatchInfo} teamNumber={4201}/>
-                        <p className="text-2xl">︙ 4 matches</p>
-                        <Match matchInfo={testMatchInfo} teamNumber={4201}/>
+                        {teamMatches}
                     </div>
                     <div className="w-0.5 bg-gray-500" />
                     <div className="text-3xl text-center space-y-5 mx-auto">

@@ -1,13 +1,14 @@
 import { format } from 'date-fns';
+import { shortenMatchName } from '../TBA';
 
 interface MatchInfo {
     matchName: string;
-    red1: number;
-    red2: number;
-    red3: number;
-    blue1: number;
-    blue2: number;
-    blue3: number;
+    red1: number | undefined;
+    red2: number | undefined;
+    red3: number | undefined;
+    blue1: number | undefined;
+    blue2: number | undefined;
+    blue3: number | undefined;
     
     queue: Date | undefined;
     matchStart: Date | undefined;
@@ -17,7 +18,7 @@ function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: numb
     return (
         <div className="grid grid-cols-5 grid-rows-2 text-2xl">
             <div className="row-span-2 bg-gray-400 p-2">
-                <p>{matchInfo.matchName}</p>
+                <p>{shortenMatchName(matchInfo.matchName)}</p>
             </div>
             <div>
                 <div className="bg-red-500 border border-white h-full">
@@ -52,3 +53,4 @@ function Match({matchInfo, teamNumber} : {matchInfo: MatchInfo, teamNumber: numb
 }
 
 export default Match;
+export type { MatchInfo };

@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@tater-archives/react-use-interval": "^1.0.2",
+    "@types/x-ray": "^2.3.6",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-material-symbols": "^4.4.0",
+    "react-select-search": "^4.1.7",
     "tailwindcss": "^3.4.1",
     "tba-api-client": "^1.1.1"
   },
