@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Match, { MatchInfo } from './components/Match';
 import Timer from './components/Timer';
-import { getTeamMatches } from './TBA';
+import { getTeamMatches, extractNumber } from './TBA';
 
 dayjs.extend(relativeTime);
 
@@ -18,11 +18,19 @@ function App() {
     const [lastRefresh, setLastRefresh] = useState(new Date());
     const refreshMessage = dayjs(lastRefresh).fromNow();
     
-    const [teamMatches, setTeamMatches] = useState<ReactNode[]>([]);
+    const [teamMatches, setTeamMatches] = useState<ReactNode[]>([<p className="text-4xl" >Loading...</p>]);
     
     useEffect(() => {
-        getTeamMatches(4501, "2024nvlv").then((matches) => {
-            const matchElements = matches.map((match: MatchInfo) => <Match matchInfo={match} teamNumber={4501} />);
+        getTeamMatches(4201, "2024cala").then((matches: MatchInfo[]) => {
+            const matchElements = matches.map((match: MatchInfo, index, array) =>
+                <>
+                    <Match matchInfo={match} teamNumber={4201} />
+                    {array[index+1] &&
+                        <p className="text-2xl">
+                            {((array[index+1].matchName.startsWith("Qual") && match.matchName.startsWith("Qual")) || (array[index+1].matchName.startsWith("Playoff") && match.matchName.startsWith("Playoff")))
+                            ? `︙ ${extractNumber(array[index+1].matchName) - extractNumber(match.matchName)} matches` : "︙ Alliance selection"}
+                        </p>}
+                </>);
             setTeamMatches(matchElements);
         });
     }, []);

@@ -157,5 +157,10 @@ function teamNumberToKey(teamNumber: number) {
     return "frc" + teamNumber.toString();
 }
 
-export { getTeamMatches, getAllEvents, shortenMatchName};
+function extractNumber(str: string) {
+    const match = str.match(/\d+$/);
+    return match ? parseInt(match[0]) : 0;
+}
+
+export { getTeamMatches, getAllEvents, shortenMatchName, extractNumber};
 export type { EventInfo };
