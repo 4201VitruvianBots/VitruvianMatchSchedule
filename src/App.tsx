@@ -37,7 +37,7 @@ function App() {
         getTeamMatches(teamNumber, eventKey).then((matches: MatchInfo[]) => {
             const matchElements = matches.map((match: MatchInfo, index, array) =>
                 <>
-                    <Match matchInfo={match} teamNumber={4201} delayMins={delayMins} />
+                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} />
                     {array[index+1] && !array[index+1].matchName.startsWith("Final") &&
                         <p className="text-2xl">
                             {((array[index+1].matchName.startsWith("Qual") && match.matchName.startsWith("Qual")) || (array[index+1].matchName.startsWith("Playoff") && match.matchName.startsWith("Playoff")))
@@ -53,7 +53,10 @@ function App() {
             }
     })};
     const refreshEvents = () => {
-        getAllEvents().then((events: EventInfo[]) => setEvents(events));
+        getAllEvents().then((events: EventInfo[]) => {
+            events.push({ eventKey: "", eventName: "Select an event", teams: [] });
+            setEvents(events);
+        });
     }
     useEffect(refreshTeamMatches, [delayMins, teamNumber, eventKey]);
     useEffect(refreshEvents, []);
