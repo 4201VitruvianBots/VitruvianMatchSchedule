@@ -34,8 +34,11 @@ function App() {
     const [events, setEvents] = useState<EventInfo[]>([]);
     
     function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
+        // Cover the case where there is no next match
+        if (match2 == undefined) {
+            return [""];
         // Cover the case where both matches are qual/playoff matches
-        if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
+        } else if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
             return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} matches`];
         // Cover the case where one match is a qual match and the other is a playoff match
         } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
