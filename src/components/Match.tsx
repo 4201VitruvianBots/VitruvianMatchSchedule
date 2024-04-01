@@ -16,6 +16,8 @@ interface MatchInfo {
     
     totalQualMatches: number;
     totalPlayoffMatches: number;
+    
+    id: string;
 }
 
 function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number, mostRecentMatch: boolean}) {
@@ -36,8 +38,16 @@ function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo:
     }
     return (
         <div className="grid grid-cols-5 grid-rows-2 text-2xl" ref={elementRef}>
-            <div className="row-span-2 bg-gray-400 p-2">
+            <div className="row-span-2 bg-gray-400 p-2 grid grid-rows-2">
                 <p>{shortenMatchName(matchInfo.matchName)}</p>
+                <div className="flex w-24 space-x-4 items-end">
+                    <a href={"https://www.thebluealliance.com/match/"+matchInfo.id}>
+                        <img src="tbaLogo.png" />
+                    </a>
+                    <a href={"https://www.statbotics.io/match/"+matchInfo.id}>
+                        <img src="statboticsLogo.png" />
+                    </a>
+                </div>
             </div>
             <div>
                 <div className="bg-red-500 border border-white h-full">

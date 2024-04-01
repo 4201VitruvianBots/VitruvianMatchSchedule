@@ -137,6 +137,7 @@ function getTeamMatches(teamNumber: number, eventKey: string) {
                         matchStart: match.time ? new Date(match.time * 1000) : undefined,
                         totalQualMatches: totalQual,
                         totalPlayoffMatches: totalPlayoff,
+                        id: match.key,
                     };
                 })
                 .sort((a, b) => {

@@ -90,6 +90,12 @@ function App() {
         setLastRefresh(new Date());
     }
     
+    const themes = ["Generic Light", "Generic Dark", "Vitruvian Light", "Vitruvian Dark"];
+    const [theme, setTheme] = useState(themes[0]);
+    const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setTheme(themes[parseInt(event.target.value)]);
+    }
+    
     return (
         <>
             {settingsOpen &&
@@ -108,10 +114,24 @@ function App() {
                                     {events.map((event) => <option value={event.eventKey}>{event.eventName}</option>)}
                                 </select>
                             </div>
-                            
+                            <br />
                             <h1 className="text-4xl p-5">Team Number</h1>
                             <div className="pl-5">
                                 <input className="bg-gray-200 text-4xl max-w-32" type="number" value={teamNumber} onChange={handleTeamNumberChange}></input>
+                            </div>
+                            <br />
+                            <h1 className="text-4xl p-5">Theme</h1>
+                            <div className="pl-5">
+                                <select className="bg-gray-200 text-4xl max-w-96" onChange={handleThemeChange}>
+                                    {themes.map((theme, index) => <option value={index} >{theme}</option>)}
+                                </select>
+                            </div>
+                            <br />
+                            <div className="flex justify-center items-center">
+                                <h1 className="text-2xl p-5">Powered by The Blue Alliance</h1>
+                                <a href="https://www.thebluealliance.com/">
+                                    <img src="tbaLogo.png" width={48} className="object-scale-down"/>
+                                </a>
                             </div>
                         </div>
                     </div>
