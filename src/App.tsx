@@ -61,9 +61,10 @@ function App() {
     
     const refreshTeamMatches = () => {
         getTeamMatches(teamNumber, eventKey).then((matches: MatchInfo[]) => {
+            const mostRecentMatch = matches.find((match) => match.matchStart && match.matchStart > new Date());
             const matchElements = matches.map((match: MatchInfo, index, array) =>
                 <>
-                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} />
+                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} mostRecentMatch={match === mostRecentMatch}/>
                     {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl">{text}</p>))}
                 </>);
             if (matchElements.length > 0) {

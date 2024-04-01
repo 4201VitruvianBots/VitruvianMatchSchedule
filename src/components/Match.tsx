@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { shortenMatchName } from '../TBA';
+import { useEffect, useRef } from 'react';
 
 interface MatchInfo {
     matchName: string;
@@ -17,7 +18,15 @@ interface MatchInfo {
     totalPlayoffMatches: number;
 }
 
-function Match({matchInfo, teamNumber, delayMins} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number}) {
+function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number, mostRecentMatch: boolean}) {
+    const elementRef = useRef<HTMLParagraphElement>(null);
+
+    useEffect(() => {
+        if (mostRecentMatch) {
+            elementRef.current?.scrollIntoView({block: 'start'})
+        }
+    }, [mostRecentMatch]);
+    
     // Shift the time by the delay
     if (matchInfo.matchStart) {
         matchInfo.matchStart.setMinutes(matchInfo.matchStart.getMinutes() + (delayMins / 2));
@@ -26,7 +35,7 @@ function Match({matchInfo, teamNumber, delayMins} : {matchInfo: MatchInfo, teamN
         matchInfo.queue.setMinutes(matchInfo.queue.getMinutes() + (delayMins / 2));
     }
     return (
-        <div className="grid grid-cols-5 grid-rows-2 text-2xl">
+        <div className="grid grid-cols-5 grid-rows-2 text-2xl" ref={elementRef}>
             <div className="row-span-2 bg-gray-400 p-2">
                 <p>{shortenMatchName(matchInfo.matchName)}</p>
             </div>
@@ -56,7 +65,7 @@ function Match({matchInfo, teamNumber, delayMins} : {matchInfo: MatchInfo, teamN
             </div>
             <div className="row-span-2 bg-gray-400 p-2">
                 {matchInfo.queue && <p>Queuing at {format(matchInfo.queue, "h:mm a")}</p>}
-                {matchInfo.matchStart && <p>Match starts at {format(matchInfo.matchStart, "h:mm a")}</p>}
+                {matchInfo.matchStart && <p>Match start{matchInfo.matchStart > new Date() ? "s" : "ed"} at {format(matchInfo.matchStart, "h:mm a")}</p>}
             </div>
         </div>
     );
