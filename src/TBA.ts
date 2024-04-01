@@ -3,7 +3,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-const apiKey = "hRJWOPNWjFsFzkkAUyNgHVKXocbvusMIRPW0sAbP3dtVfKy8tgaEWuZAo833zfEX";
+const apiKey = "hRJWOPNWjFsFzkkAUyNgHVKXocbvusMIRPW0sAbP3dtVfKy8tgaEWuZAo833zfEX"; // Will be disabled in the future
 
 interface EventInfo {
     eventName: string;
@@ -99,30 +99,53 @@ function getAllEvents() {
 }
 
 function getTeamMatches(teamNumber: number, eventKey: string) {
-    return fetch(`https://www.thebluealliance.com/api/v3/team/${teamNumberToKey(teamNumber)}/event/${eventKey}/matches`, {
+    const totalQualMatches = fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
     }).then((res) => res.json()).then((matchList: Match[]) => {
-        return matchList
-            .map((match: Match) => {
-                return {
-                    matchName: getMatchName(match),
-                    red1: teamKeyToNumber(match.alliances?.red?.team_keys[0] || ""),
-                    red2: teamKeyToNumber(match.alliances?.red?.team_keys[1] || ""),
-                    red3: teamKeyToNumber(match.alliances?.red?.team_keys[2] || ""),
-                    blue1: teamKeyToNumber(match.alliances?.blue?.team_keys[0] || ""),
-                    blue2: teamKeyToNumber(match.alliances?.blue?.team_keys[1] || ""),
-                    blue3: teamKeyToNumber(match.alliances?.blue?.team_keys[2] || ""),
-                    queue: undefined,
-                    matchStart: match.time ? new Date(match.time * 1000) : undefined,
-                };
-            }).sort((a, b) => {
-                if (a.matchStart && b.matchStart) {
-                    return a.matchStart.getTime() - b.matchStart.getTime();
-                }
-                return 0;
-            });
+        return matchList.filter((match: Match) => match.comp_level == "qm").length;
+    });
+    const totalPlayoffMatches = fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
+        headers: {
+            'X-TBA-Auth-Key': apiKey,
+        },
+    }).then((res) => res.json()).then((matchList: Match[]) => {
+        return matchList.filter((match: Match) => (match.comp_level == "sf") || (match.comp_level == "qf") || (match.comp_level == "ef")).length;
+    });
+    
+    return Promise.all([totalQualMatches, totalPlayoffMatches])
+    .then(([totalQual, totalPlayoff]) => {
+        return fetch(`https://www.thebluealliance.com/api/v3/team/${teamNumberToKey(teamNumber)}/event/${eventKey}/matches`, {
+            headers: {
+                'X-TBA-Auth-Key': apiKey,
+            },
+        })
+        .then((res) => res.json())
+        .then((matchList: Match[]) => {
+            return matchList
+                .map((match: Match) => {
+                    return {
+                        matchName: getMatchName(match),
+                        red1: teamKeyToNumber(match.alliances?.red?.team_keys[0] || ""),
+                        red2: teamKeyToNumber(match.alliances?.red?.team_keys[1] || ""),
+                        red3: teamKeyToNumber(match.alliances?.red?.team_keys[2] || ""),
+                        blue1: teamKeyToNumber(match.alliances?.blue?.team_keys[0] || ""),
+                        blue2: teamKeyToNumber(match.alliances?.blue?.team_keys[1] || ""),
+                        blue3: teamKeyToNumber(match.alliances?.blue?.team_keys[2] || ""),
+                        queue: undefined,
+                        matchStart: match.time ? new Date(match.time * 1000) : undefined,
+                        totalQualMatches: totalQual,
+                        totalPlayoffMatches: totalPlayoff,
+                    };
+                })
+                .sort((a, b) => {
+                    if (a.matchStart && b.matchStart) {
+                        return a.matchStart.getTime() - b.matchStart.getTime();
+                    }
+                    return 0;
+                });
+        });
     });
 }
 

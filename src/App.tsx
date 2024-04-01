@@ -33,16 +33,35 @@ function App() {
     const [teamMatchInfos, setTeamMatchInfos] = useState<MatchInfo[]>([]);
     const [events, setEvents] = useState<EventInfo[]>([]);
     
+    function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
+        // Cover the case where both matches are qual/playoff matches
+        if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
+            return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} matches`];
+        // Cover the case where one match is a qual match and the other is a playoff match
+        } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
+            let allStrings = ["︙ Alliance selection"];
+            const qualMatchesLeft = match1.totalQualMatches - extractNumber(match1.matchName);
+            const playoffMatchesBefore = extractNumber(match2.matchName) - 1;
+            if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} matches`, ...allStrings];
+            if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} matches`);
+            return allStrings;
+        // Cover the case where one match is a playoff match and the other is a final match
+        } else if (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Final")) {
+            const playoffMatchesLeft = match1.totalPlayoffMatches - extractNumber(match1.matchName);
+            const finalMatchesBefore = extractNumber(match2.matchName) - 1;
+            if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} matches`];
+            else return [""];
+        } else {
+            return [""];
+        }
+    }
+    
     const refreshTeamMatches = () => {
         getTeamMatches(teamNumber, eventKey).then((matches: MatchInfo[]) => {
             const matchElements = matches.map((match: MatchInfo, index, array) =>
                 <>
                     <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} />
-                    {array[index+1] && !array[index+1].matchName.startsWith("Final") &&
-                        <p className="text-2xl">
-                            {((array[index+1].matchName.startsWith("Qual") && match.matchName.startsWith("Qual")) || (array[index+1].matchName.startsWith("Playoff") && match.matchName.startsWith("Playoff")))
-                            ? `︙ ${extractNumber(array[index+1].matchName) - extractNumber(match.matchName)} matches` : "︙ Alliance selection"}
-                        </p>}
+                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl">{text}</p>))}
                 </>);
             if (matchElements.length > 0) {
                 setTeamMatches(matchElements);

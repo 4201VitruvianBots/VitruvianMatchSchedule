@@ -12,6 +12,9 @@ interface MatchInfo {
     
     queue: Date | undefined;
     matchStart: Date | undefined;
+    
+    totalQualMatches: number;
+    totalPlayoffMatches: number;
 }
 
 function Match({matchInfo, teamNumber, delayMins} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number}) {
