@@ -1,5 +1,5 @@
-import { MatchInfo } from './components/Match';
-import XRay from "x-ray";
+//import { MatchInfo } from './components/Match';
+//import XRay from "x-ray";
 
 /* Write web scraping code using the typescript npm library XRay to do the following:
   - Find the component nexus-upcoming-matches
@@ -20,38 +20,38 @@ import XRay from "x-ray";
   - Return this updated MatchInfo.
 */
 
-function getQueueTime(teamNumber: number, eventKey: string, match: MatchInfo) {
-    const url = "https://frc.nexus/en/event/" + eventKey + "/team/" + teamNumber.toString();
-    const x = XRay();
-    x(url, "nexus-upcoming-matches .card.overflow-hidden #upcomingMatches .accordion-item.ng-star-inserted", [{
-        matchName: "h2 button span",
-        matchDell: x("div#match-dell .accordion-body", ["p i", "p"])
-    }])((err, data) => {
-        if (err) {
-            console.error(err);
-            return match;
-        }
-        for (const matchData of data) {
-            if (matchData.matchName === match.matchName) {
-                for (const matchDell of matchData.matchDell) {
-                    for (const text of matchDell) {
-                        if (text.includes("Estimated to queue @ ")) {
-                            const queueTime = text.split("Estimated to queue @ ")[1];
-                            const matchStart = match.matchStart || new Date();
-                            const queueDate = new Date(matchStart);
-                            const [hours, minutes] = queueTime.split(":");
-                            queueDate.setHours(parseInt(hours));
-                            queueDate.setMinutes(parseInt(minutes));
-                            match.queue = queueDate;
-                            return match;
-                        }
-                    }
-                }
-            }
-        }
-        return match;
-    });
-    return match;
-}
+// function getQueueTime(teamNumber: number, eventKey: string, match: MatchInfo) {
+//     const url = "https://frc.nexus/en/event/" + eventKey + "/team/" + teamNumber.toString();
+//     const x = XRay();
+//     x(url, "nexus-upcoming-matches .card.overflow-hidden #upcomingMatches .accordion-item.ng-star-inserted", [{
+//         matchName: "h2 button span",
+//         matchDell: x("div#match-dell .accordion-body", ["p i", "p"])
+//     }])((err, data) => {
+//         if (err) {
+//             console.error(err);
+//             return match;
+//         }
+//         for (const matchData of data) {
+//             if (matchData.matchName === match.matchName) {
+//                 for (const matchDell of matchData.matchDell) {
+//                     for (const text of matchDell) {
+//                         if (text.includes("Estimated to queue @ ")) {
+//                             const queueTime = text.split("Estimated to queue @ ")[1];
+//                             const matchStart = match.matchStart || new Date();
+//                             const queueDate = new Date(matchStart);
+//                             const [hours, minutes] = queueTime.split(":");
+//                             queueDate.setHours(parseInt(hours));
+//                             queueDate.setMinutes(parseInt(minutes));
+//                             match.queue = queueDate;
+//                             return match;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return match;
+//     });
+//     return match;
+// }
 
-export { getQueueTime };
+// export { getQueueTime };
