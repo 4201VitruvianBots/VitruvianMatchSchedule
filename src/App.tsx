@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import 'react-material-symbols/rounded';
 import { MaterialSymbol } from 'react-material-symbols';
 import EditableButton from './components/EditableButton';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import Match, { MatchInfo } from './components/Match';
 import Timer from './components/Timer';
