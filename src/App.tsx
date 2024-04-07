@@ -46,20 +46,20 @@ function App() {
             return [""];
         // Cover the case where both matches are qual/playoff matches
         } else if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
-            return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} matches`];
+            return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} match${extractNumber(match2.matchName) - extractNumber(match1.matchName) != 1 ? "es" : ""}`];
         // Cover the case where one match is a qual match and the other is a playoff match
         } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
             let allStrings = ["︙ Alliance selection"];
             const qualMatchesLeft = match1.totalQualMatches - extractNumber(match1.matchName);
             const playoffMatchesBefore = extractNumber(match2.matchName) - 1;
-            if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} matches`, ...allStrings];
-            if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} matches`);
+            if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} match${qualMatchesLeft != 1 ? "es" : ""}`, ...allStrings];
+            if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} match${playoffMatchesBefore != 1 ? "es" : ""}`);
             return allStrings;
         // Cover the case where one match is a playoff match and the other is a final match
         } else if (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Final")) {
             const playoffMatchesLeft = match1.totalPlayoffMatches - extractNumber(match1.matchName);
             const finalMatchesBefore = extractNumber(match2.matchName) - 1;
-            if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} matches`];
+            if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} match${playoffMatchesLeft + finalMatchesBefore != 1 ? "es" : ""}`];
             else return [""];
         } else {
             return [""];
