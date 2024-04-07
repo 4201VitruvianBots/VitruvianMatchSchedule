@@ -8,6 +8,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import Match, { MatchInfo } from './components/Match';
 import Timer from './components/Timer';
 import { getTeamMatches, extractNumber, EventInfo, getAllEvents } from './TBA';
+import { useLocalStorage } from '@tater-archives/react-use-localstorage';
 
 dayjs.extend(relativeTime);
 
@@ -18,12 +19,18 @@ function App() {
     const [lastRefresh, setLastRefresh] = useState(new Date());
     const refreshMessage = dayjs(lastRefresh).fromNow();
     
-    const [teamNumber, setTeamNumber] = useState(0);
+    const [teamNumber, setTeamNumber] = useLocalStorage(0, "teamNumber");
     const handleTeamNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTeamNumber(parseInt(event.target.value));
         refreshData();
     }
-    const [eventKey, setEventKey] = useState("");
+    
+    const [apiKey, setApiKey] = useLocalStorage("", "apiKey");
+    const handleApiKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setApiKey(event.target.value);
+    }
+    
+    const [eventKey, setEventKey] = useLocalStorage("", "eventKey");
     const handleEventSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setEventKey(event.target.value);
         refreshData();
@@ -60,7 +67,7 @@ function App() {
     }
     
     const refreshTeamMatches = () => {
-        getTeamMatches(teamNumber, eventKey).then((matches: MatchInfo[]) => {
+        getTeamMatches(teamNumber, eventKey, apiKey).then((matches: MatchInfo[]) => {
             const mostRecentMatch = matches.find((match) => match.matchStart && match.matchStart > new Date());
             const matchElements = matches.map((match: MatchInfo, index, array) =>
                 <>
@@ -76,13 +83,13 @@ function App() {
             }
     })};
     const refreshEvents = () => {
-        getAllEvents().then((events: EventInfo[]) => {
+        getAllEvents(apiKey).then((events: EventInfo[]) => {
             events.push({ eventKey: "", eventName: "Select an event", teams: [] });
             setEvents(events);
         });
     }
-    useEffect(refreshTeamMatches, [delayMins, teamNumber, eventKey]);
-    useEffect(refreshEvents, []);
+    useEffect(refreshTeamMatches, [delayMins, teamNumber, eventKey, apiKey]);
+    useEffect(refreshEvents, [apiKey]);
     
     const refreshData = () => {
         refreshTeamMatches();
@@ -91,7 +98,7 @@ function App() {
     }
     
     const themes = ["Generic Light", "Generic Dark", "Vitruvian Light", "Vitruvian Dark"];
-    const [theme, setTheme] = useState(themes[0]);
+    const [, setTheme] = useState(themes[0]);
     const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setTheme(themes[parseInt(event.target.value)]);
     }
@@ -125,6 +132,18 @@ function App() {
                                 <select className="bg-gray-200 text-4xl max-w-96" onChange={handleThemeChange}>
                                     {themes.map((theme, index) => <option value={index} >{theme}</option>)}
                                 </select>
+                            </div>
+                            <br />
+                            <div className="flex items-center">
+                                <h1 className="text-4xl p-5">API Key</h1>
+                                <form>
+                                    <button formAction="https://www.thebluealliance.com/account#api-read-key-add" formTarget="_blank" title="The Read API key from The Blue Alliance (TBA) the app will use to gather data.">
+                                            <MaterialSymbol icon="help" size={36} />
+                                    </button>
+                                </form>
+                            </div>
+                            <div className="pl-5">
+                                <input className="bg-gray-200 text-4xl" type="string" value={apiKey} onChange={handleApiKeyChange}></input>
                             </div>
                             <br />
                             <div className="flex justify-center items-center">

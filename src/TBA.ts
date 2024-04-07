@@ -3,8 +3,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-const apiKey = "hRJWOPNWjFsFzkkAUyNgHVKXocbvusMIRPW0sAbP3dtVfKy8tgaEWuZAo833zfEX"; // Will be disabled in the future
-
 interface EventInfo {
     eventName: string;
     eventKey: string;
@@ -72,7 +70,7 @@ interface Team {
     country: string;
 }
 
-function getAllEvents() {
+function getAllEvents(apiKey: string) {
     const currentYear = new Date().getFullYear();
     const events = fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
         headers: {
@@ -98,7 +96,7 @@ function getAllEvents() {
     });
 }
 
-function getTeamMatches(teamNumber: number, eventKey: string) {
+function getTeamMatches(teamNumber: number, eventKey: string, apiKey: string) {
     const totalQualMatches = fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,

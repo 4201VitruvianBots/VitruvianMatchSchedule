@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tater-archives/react-use-interval": "^1.0.2",
+    "@tater-archives/react-use-localstorage": "^1.0.5",
     "@types/x-ray": "^2.3.6",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
