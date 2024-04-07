@@ -181,7 +181,7 @@ function App() {
                             // Display the time until the next match
                             <>
                                 <p className="font-bold">{nextMatch.matchName}</p>
-                                <Timer targetName="Queuing" targetDate={teamMatchInfos.find((match) => match.queue && match.queue > new Date())?.queue || new Date()}/>
+                                <Timer targetName="Queuing" targetDate={nextMatch.queue || new Date()}/>
                                 <Timer targetName="Match starts" targetDate={nextMatch.matchStart || new Date()}/>
                             </>
                         :
