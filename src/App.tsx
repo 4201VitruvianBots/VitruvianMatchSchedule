@@ -1,5 +1,5 @@
 import './index.css';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-material-symbols/rounded';
 import { MaterialSymbol } from 'react-material-symbols';
 import EditableButton from './components/EditableButton';
@@ -21,6 +21,33 @@ const themes: Record<Theme, string> = {
     vdark: "Vitruvian Dark",
 };
 
+function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
+    // Cover the case where there is no next match
+    if (match2 == undefined) {
+        return [""];
+    // Cover the case where both matches are qual/playoff matches
+    } else if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
+        return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} match${extractNumber(match2.matchName) - extractNumber(match1.matchName) != 1 ? "es" : ""}`];
+    // Cover the case where one match is a qual match and the other is a playoff match
+    } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
+        let allStrings = ["︙ Alliance selection"];
+        const qualMatchesLeft = match1.totalQualMatches - extractNumber(match1.matchName);
+        const playoffMatchesBefore = extractNumber(match2.matchName) - 1;
+        if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} match${qualMatchesLeft != 1 ? "es" : ""}`, ...allStrings];
+        if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} match${playoffMatchesBefore != 1 ? "es" : ""}`);
+        return allStrings;
+    // Cover the case where one match is a playoff match and the other is a final match
+    } else if (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Final")) {
+        const playoffMatchesLeft = match1.totalPlayoffMatches - extractNumber(match1.matchName);
+        const finalMatchesBefore = extractNumber(match2.matchName) - 1;
+        if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} match${playoffMatchesLeft + finalMatchesBefore != 1 ? "es" : ""}`];
+        else return [""];
+    } else {
+        return [""];
+    }
+}
+    
+
 function App() {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [delayMins, setDelayMins] = useState(0);
@@ -31,7 +58,6 @@ function App() {
     const [teamNumber, setTeamNumber] = useLocalStorage(0, "teamNumber");
     const handleTeamNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTeamNumber(parseInt(event.target.value));
-        refreshData();
     }
     
     const [apiKey, setApiKey] = useLocalStorage("", "apiKey");
@@ -42,62 +68,23 @@ function App() {
     const [eventKey, setEventKey] = useLocalStorage("", "eventKey");
     const handleEventSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setEventKey(event.target.value);
-        refreshData();
     };
     
-    const [teamMatches, setTeamMatches] = useState<ReactNode[]>([<p className="text-4xl flex justify-center text-gray-500">{((eventKey != "" && teamNumber != 0)) ? "Loading..." : "No team or event selected"}</p>]);
     const [teamMatchInfos, setTeamMatchInfos] = useState<MatchInfo[]>([]);
     const [events, setEvents] = useState<EventInfo[]>([]);
     
-    function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
-        // Cover the case where there is no next match
-        if (match2 == undefined) {
-            return [""];
-        // Cover the case where both matches are qual/playoff matches
-        } else if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
-            return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} match${extractNumber(match2.matchName) - extractNumber(match1.matchName) != 1 ? "es" : ""}`];
-        // Cover the case where one match is a qual match and the other is a playoff match
-        } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
-            let allStrings = ["︙ Alliance selection"];
-            const qualMatchesLeft = match1.totalQualMatches - extractNumber(match1.matchName);
-            const playoffMatchesBefore = extractNumber(match2.matchName) - 1;
-            if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} match${qualMatchesLeft != 1 ? "es" : ""}`, ...allStrings];
-            if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} match${playoffMatchesBefore != 1 ? "es" : ""}`);
-            return allStrings;
-        // Cover the case where one match is a playoff match and the other is a final match
-        } else if (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Final")) {
-            const playoffMatchesLeft = match1.totalPlayoffMatches - extractNumber(match1.matchName);
-            const finalMatchesBefore = extractNumber(match2.matchName) - 1;
-            if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} match${playoffMatchesLeft + finalMatchesBefore != 1 ? "es" : ""}`];
-            else return [""];
-        } else {
-            return [""];
-        }
-    }
-    
     const refreshTeamMatches = () => {
         getTeamMatches(teamNumber, eventKey, apiKey).then((matches: MatchInfo[]) => {
-            const mostRecentMatch = matches.find((match) => match.matchStart && match.matchStart > new Date());
-            const matchElements = matches.map((match: MatchInfo, index, array) =>
-                <>
-                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} mostRecentMatch={match === mostRecentMatch}/>
-                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl">{text}</p>))}
-                </>);
-            if (matchElements.length > 0) {
-                setTeamMatches(matchElements);
                 setTeamMatchInfos(matches);
-            } else {
-                setTeamMatches([<p className="text-4xl flex justify-center text-gray-500" >No matches for this event</p>]);
-                setTeamMatchInfos([]);
-            }
     })};
+
     const refreshEvents = () => {
         getAllEvents(apiKey).then((events: EventInfo[]) => {
             events.push({ eventKey: "", eventName: "Select an event", teams: [] });
             setEvents(events);
         });
     }
-    useEffect(refreshTeamMatches, [delayMins, teamNumber, eventKey, apiKey]);
+    useEffect(refreshTeamMatches, [teamNumber, eventKey, apiKey, delayMins]);
     useEffect(refreshEvents, [apiKey]);
     
     const refreshData = () => {
@@ -111,6 +98,8 @@ function App() {
     const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setTheme(event.target.value as Theme);
     }
+    
+    const nextMatch = teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date());
     
     return (
         <main className={`theme-${theme}`}>
@@ -176,22 +165,26 @@ function App() {
                 
                 <div className="p-8 gap-8 grid grid-cols-[1fr_auto_1fr] min-h-0">
                     <div className="space-y-5 overflow-y-auto">
-                        {teamMatches}
+                        {teamMatchInfos.length === 0
+                            ? <p className="text-4xl flex justify-center text-gray-500">{((eventKey !== "" && teamNumber !== 0)) ? "No matches for this event" : "No team or event selected"}</p>
+                            : teamMatchInfos.map((match, index, array) =>
+                                <>
+                                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} mostRecentMatch={match === nextMatch}/>
+                                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl">{text}</p>))}
+                                </>
+                            )
+                        }
                     </div>
                     <div className="w-0.5 bg-gray-500" />
                     <div className="text-3xl text-center space-y-5 mx-auto">
-                        {teamMatchInfos.length > 0 &&
-                            // Find the first match that hasn't started yet 
-                            teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date()) &&
+                        {nextMatch ?
                             // Display the time until the next match
                             <>
-                                <p className="font-bold">{teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date())?.matchName}</p>
-                                {teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date())?.queue && <Timer targetName="Queuing" targetDate={teamMatchInfos.find((match) => match.queue && match.queue > new Date())?.queue || new Date()}/>}
-                                {teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date())?.matchStart && <Timer targetName="Match starts" targetDate={teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date())?.matchStart || new Date()}/>}
+                                <p className="font-bold">{nextMatch.matchName}</p>
+                                <Timer targetName="Queuing" targetDate={teamMatchInfos.find((match) => match.queue && match.queue > new Date())?.queue || new Date()}/>
+                                <Timer targetName="Match starts" targetDate={nextMatch.matchStart || new Date()}/>
                             </>
-                        }
-                        {!(teamMatchInfos.length > 0 &&
-                            teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date())) &&
+                        :
                             <p className="text-4xl flex justify-center text-gray-500" >No upcoming matches</p>
                         }
                     </div>

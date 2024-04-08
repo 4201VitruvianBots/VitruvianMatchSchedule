@@ -20,6 +20,17 @@ interface MatchInfo {
     id: string;
 }
 
+function withMinuteChange(date: Date, minuteChange: number) {
+    if (minuteChange === 0)
+        return date;
+
+    const newDate = new Date(date.getTime());
+    
+    newDate.setMinutes(newDate.getMinutes() + minuteChange)
+
+    return newDate;    
+}
+
 function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo: MatchInfo, teamNumber: number, delayMins: number, mostRecentMatch: boolean}) {
     const elementRef = useRef<HTMLParagraphElement>(null);
 
@@ -29,13 +40,9 @@ function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo:
         }
     }, [mostRecentMatch]);
     
-    // Shift the time by the delay
-    if (matchInfo.matchStart) {
-        matchInfo.matchStart.setMinutes(matchInfo.matchStart.getMinutes() + (delayMins / 2));
-    }
-    if (matchInfo.queue) {
-        matchInfo.queue.setMinutes(matchInfo.queue.getMinutes() + (delayMins / 2));
-    }
+    const startTime = matchInfo.matchStart && withMinuteChange(matchInfo.matchStart, delayMins);
+    const queueTime = matchInfo.queue && withMinuteChange(matchInfo.queue, delayMins);
+    
     return (
         <div className="grid grid-cols-5 grid-rows-2 text-2xl" ref={elementRef}>
             <div className="row-span-2 bg-gray-400 p-2 grid grid-rows-2">
@@ -74,8 +81,8 @@ function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo:
                 </div>
             </div>
             <div className="row-span-2 bg-gray-400 p-2">
-                {matchInfo.queue && <p>Queuing at {format(matchInfo.queue, "h:mm a")}</p>}
-                {matchInfo.matchStart && <p>Match start{matchInfo.matchStart > new Date() ? "s" : "ed"} at {format(matchInfo.matchStart, "h:mm a")}</p>}
+                {queueTime && <p>Queuing at {format(queueTime, "h:mm a")}</p>}
+                {startTime && <p>Match start{startTime > new Date() ? "s" : "ed"} at {format(startTime, "h:mm a")}</p>}
             </div>
         </div>
     );
