@@ -57,26 +57,26 @@ function Match({matchInfo, teamNumber, delayMins, mostRecentMatch} : {matchInfo:
                 </div>
             </div>
             <div>
-                <div className="bg-red-500 border border-white h-full">
+                <div className="bg-red-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.red1 ? "font-bold" : ""}>{matchInfo.red1}</p>
                 </div>
-                <div className="bg-blue-500 border border-white h-full">
+                <div className="bg-blue-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.blue1 ? "font-bold" : ""}>{matchInfo.blue1}</p>
                 </div>
             </div>
             <div>
-                <div className="bg-red-500 border border-white h-full">
+                <div className="bg-red-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.red2 ? "font-bold" : ""}>{matchInfo.red2}</p>
                 </div>
-                <div className="bg-blue-500 border border-white h-full">
+                <div className="bg-blue-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.blue2 ? "font-bold" : ""}>{matchInfo.blue2}</p>
                 </div>
             </div>
             <div>
-                <div className="bg-red-500 border border-white h-full">
+                <div className="bg-red-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.red3 ? "font-bold" : ""}>{matchInfo.red3}</p>
                 </div>
-                <div className="bg-blue-500 border border-white h-full">
+                <div className="bg-blue-500 border border-white theme-gdark:border-gray-900 theme-vdark:border-gray-900 h-full">
                     <p className={teamNumber == matchInfo.blue3 ? "font-bold" : ""}>{matchInfo.blue3}</p>
                 </div>
             </div>
