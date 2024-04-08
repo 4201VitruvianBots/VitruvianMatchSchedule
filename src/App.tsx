@@ -12,6 +12,15 @@ import { useLocalStorage } from '@tater-archives/react-use-localstorage';
 
 dayjs.extend(relativeTime);
 
+type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
+
+const themes: Record<Theme, string> = {
+    glight: "Generic Light",
+    gdark: "Generic Dark",
+    vlight: "Vitruvian Light",
+    vdark: "Vitruvian Dark",
+};
+
 function App() {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [delayMins, setDelayMins] = useState(0);
@@ -96,20 +105,20 @@ function App() {
         refreshEvents();
         setLastRefresh(new Date());
     }
-    
-    const themes = ["Generic Light", "Generic Dark", "Vitruvian Light", "Vitruvian Dark"];
-    const [, setTheme] = useState(themes[0]);
+
+    const [theme, setTheme] = useState<Theme>('glight');
+
     const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setTheme(themes[parseInt(event.target.value)]);
+        setTheme(event.target.value as Theme);
     }
     
     return (
-        <>
+        <main className={`theme-${theme}`}>
             {settingsOpen &&
                 <div className="flex fixed inset-0">
                     <div className="w-1/2 h-screen bg-black bg-opacity-50" onClick={() => setSettingsOpen(!settingsOpen)}/>
                     <div className="block w-1/2">
-                        <div className="bg-barGreen max-h-[10vh] px-5 flex flex-auto justify-end z-50">
+                        <div className="bg-yellow-300 theme-gdark:bg-orange-300 theme-vlight:bg-barGreen theme-vdark:bg-blue-500 max-h-[10vh] px-5 flex flex-auto justify-end z-50">
                             <button onClick={() => setSettingsOpen(!settingsOpen)}>
                                 <MaterialSymbol icon="settings" fill color="white" size={96}/>
                             </button>
@@ -130,7 +139,7 @@ function App() {
                             <h1 className="text-4xl p-5">Theme</h1>
                             <div className="pl-5">
                                 <select className="bg-gray-200 text-4xl max-w-96" onChange={handleThemeChange}>
-                                    {themes.map((theme, index) => <option value={index} >{theme}</option>)}
+                                    {Object.entries(themes).map(([id, name]) => <option value={id} >{name}</option>)}
                                 </select>
                             </div>
                             <br />
@@ -219,7 +228,7 @@ function App() {
                     </div>
                 </div>
             </div>
-        </>
+        </main>
     );
 }
 

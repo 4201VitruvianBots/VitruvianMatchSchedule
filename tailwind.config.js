@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin';
+
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
@@ -13,6 +15,11 @@ export default {
                 },
         },
     },
-    plugins: [],
+    plugins: [
+        plugin(({matchVariant}) => {
+            matchVariant('theme', theme => `.theme-${theme} &`, {
+                values: Object.fromEntries(['gdark', 'vlight', 'vdark'].map(e => [e, e])),
+            })
+        }),
+    ],
 }
-
