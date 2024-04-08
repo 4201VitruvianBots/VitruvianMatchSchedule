@@ -70,82 +70,65 @@ interface Team {
     country: string;
 }
 
-function getAllEvents(apiKey: string) {
+async function getAllEvents(apiKey: string) {
     const currentYear = new Date().getFullYear();
-    const events = fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
+    const events: Event[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
-    }).then((res) => res.json());
-    return events.then((eventList) => {
-        return eventList
-            .filter((event: Event) => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())
-            .map((event: Event) => {
-                return {
-                    eventName: event.name,
-                    eventKey: event.key,
-                    teams: (fetch(`https://www.thebluealliance.com/api/v3/event/${event.key}/teams/simple`, {
-                        headers: {
-                            'X-TBA-Auth-Key': apiKey,
-                        },
-                    }).then((res) => res.json()).then((teamList) => {
-                        return teamList.map((team: Team) => team.team_number);
-                    })),
-                };
-            });
-    });
+    })).json();
+
+    const teamEvents = events.filter(event => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())
+
+    return Promise.all(teamEvents
+        .map(async event => ({
+            eventName: event.name,
+            eventKey: event.key,
+            teams: (await (await fetch(`https://www.thebluealliance.com/api/v3/event/${event.key}/teams/simple`, {
+                headers: {
+                    'X-TBA-Auth-Key': apiKey,
+                },
+            })).json() as Team[]).map(team => team.team_number),
+        })));
 }
 
-function getTeamMatches(teamNumber: number, eventKey: string, apiKey: string) {
-    const totalQualMatches = fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
+async function getTeamMatches(teamNumber: number, eventKey: string, apiKey: string) {
+    const totalQualMatches = (await (await fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
-    }).then((res) => res.json()).then((matchList: Match[]) => {
-        return matchList.filter((match: Match) => match.comp_level == "qm").length;
-    });
-    const totalPlayoffMatches = fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
+    })).json() as Match[]).filter((match) => match.comp_level == "qm").length;
+
+    const totalPlayoffMatches = (await (await fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/matches/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
-    }).then((res) => res.json()).then((matchList: Match[]) => {
-        return matchList.filter((match: Match) => (match.comp_level == "sf") || (match.comp_level == "qf") || (match.comp_level == "ef")).length;
-    });
+    })).json() as Match[]).filter((match: Match) => (match.comp_level == "sf") || (match.comp_level == "qf") || (match.comp_level == "ef")).length;
     
-    return Promise.all([totalQualMatches, totalPlayoffMatches])
-    .then(([totalQual, totalPlayoff]) => {
-        return fetch(`https://www.thebluealliance.com/api/v3/team/${teamNumberToKey(teamNumber)}/event/${eventKey}/matches`, {
-            headers: {
-                'X-TBA-Auth-Key': apiKey,
-            },
-        })
-        .then((res) => res.json())
-        .then((matchList: Match[]) => {
-            return matchList
-                .map((match: Match) => {
-                    return {
-                        matchName: getMatchName(match),
-                        red1: teamKeyToNumber(match.alliances?.red?.team_keys[0] || ""),
-                        red2: teamKeyToNumber(match.alliances?.red?.team_keys[1] || ""),
-                        red3: teamKeyToNumber(match.alliances?.red?.team_keys[2] || ""),
-                        blue1: teamKeyToNumber(match.alliances?.blue?.team_keys[0] || ""),
-                        blue2: teamKeyToNumber(match.alliances?.blue?.team_keys[1] || ""),
-                        blue3: teamKeyToNumber(match.alliances?.blue?.team_keys[2] || ""),
-                        queue: undefined,
-                        matchStart: match.time ? new Date(match.time * 1000) : undefined,
-                        totalQualMatches: totalQual,
-                        totalPlayoffMatches: totalPlayoff,
-                        id: match.key,
-                    };
-                })
-                .sort((a, b) => {
-                    if (a.matchStart && b.matchStart) {
-                        return a.matchStart.getTime() - b.matchStart.getTime();
-                    }
-                    return 0;
-                });
-        });
-    });
+    const [totalQual, totalPlayoff] = await Promise.all([totalQualMatches, totalPlayoffMatches]);
+
+    const matchList_2: Match[] = await (await fetch(`https://www.thebluealliance.com/api/v3/team/${teamNumberToKey(teamNumber)}/event/${eventKey}/matches`, {
+        headers: {
+            'X-TBA-Auth-Key': apiKey,
+        },
+    })).json();
+
+    return matchList_2.map(match => {
+        return {
+            matchName: getMatchName(match),
+            red1: teamKeyToNumber(match.alliances?.red?.team_keys[0] || ""),
+            red2: teamKeyToNumber(match.alliances?.red?.team_keys[1] || ""),
+            red3: teamKeyToNumber(match.alliances?.red?.team_keys[2] || ""),
+            blue1: teamKeyToNumber(match.alliances?.blue?.team_keys[0] || ""),
+            blue2: teamKeyToNumber(match.alliances?.blue?.team_keys[1] || ""),
+            blue3: teamKeyToNumber(match.alliances?.blue?.team_keys[2] || ""),
+            queue: undefined,
+            matchStart: match.time ? new Date(match.time * 1000) : undefined,
+            totalQualMatches: totalQual,
+            totalPlayoffMatches: totalPlayoff,
+            id: match.key,
+        };
+    }).sort((a, b) => a.matchStart && b.matchStart ? a.matchStart.getTime() - b.matchStart?.getTime() : 0);
 }
 
 function getMatchName(match: Match) {
