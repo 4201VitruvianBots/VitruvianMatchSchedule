@@ -170,7 +170,7 @@ function App() {
                             : teamMatchInfos.map((match, index, array) =>
                                 <>
                                     <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} mostRecentMatch={match === nextMatch}/>
-                                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl">{text}</p>))}
+                                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl theme-gdark:text-white theme-vdark:text-white">{text}</p>))}
                                 </>
                             )
                         }
