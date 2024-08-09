@@ -70,16 +70,21 @@ interface Team {
     country: string;
 }
 
-async function getAllEvents(apiKey: string) {
+async function getAllEvents(apiKey: string, pastEvents: boolean) {
     const currentYear = new Date().getFullYear();
     const events: Event[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
     })).json();
-
-    const teamEvents = events.filter(event => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())
-
+    
+    let teamEvents: Event[];
+    if (pastEvents) {
+        teamEvents = events;
+    } else {
+        teamEvents = events.filter(event => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date());
+    }
+    
     return Promise.all(teamEvents
         .map(async event => ({
             eventName: event.name,

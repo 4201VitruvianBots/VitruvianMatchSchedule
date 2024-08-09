@@ -70,6 +70,12 @@ function App() {
         setEventKey(event.target.value);
     };
     
+    const [showPastEvents, setShowPastEvents] = useLocalStorage(false, "showPastEvents");
+    const handleShowPastEventsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setShowPastEvents(event.target.checked);
+        refreshEvents();
+    }
+    
     const [teamMatchInfos, setTeamMatchInfos] = useState<MatchInfo[]>([]);
     const [events, setEvents] = useState<EventInfo[]>([]);
     
@@ -79,7 +85,7 @@ function App() {
     })};
 
     const refreshEvents = () => {
-        getAllEvents(apiKey).then((events: EventInfo[]) => {
+        getAllEvents(apiKey, showPastEvents).then((events: EventInfo[]) => {
             events.push({ eventKey: "", eventName: "Select an event", teams: [] });
             setEvents(events);
         });
@@ -142,6 +148,11 @@ function App() {
                             </div>
                             <div className="pl-5">
                                 <input className="bg-gray-200 theme-gdark:bg-gray-800 theme-vdark:bg-gray-800 text-4xl" type="string" value={apiKey} onChange={handleApiKeyChange}></input>
+                            </div>
+                            <br />
+                            <div className="pl-5">
+                                <input className="w-6 h-6" type="checkbox" value={showPastEvents ? "true" : "false"} onChange={handleShowPastEventsChange}/>
+                                <label className="text-4xl p-5">Show past events</label>
                             </div>
                             <br />
                             <div className="flex justify-center items-center">
