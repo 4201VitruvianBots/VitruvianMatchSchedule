@@ -15,10 +15,10 @@ dayjs.extend(relativeTime);
 type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
 
 const themes: Record<Theme, string> = {
-    glight: "Generic Light",
-    gdark: "Generic Dark",
     vlight: "Vitruvian Light",
     vdark: "Vitruvian Dark",
+    glight: "Generic Light",
+    gdark: "Generic Dark",
 };
 
 function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
@@ -93,7 +93,7 @@ function App() {
         setLastRefresh(new Date());
     }
 
-    const [theme, setTheme] = useLocalStorage<Theme>('glight', 'theme');
+    const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
 
     const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setTheme(event.target.value as Theme);
