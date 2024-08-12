@@ -24,13 +24,13 @@ function Timer({targetName, targetDate}: {
     const hoursLeft = Math.floor(deltaTime / 1000 / 60 / 60) % 24;
     
     return <>
-        <p className="text-black theme-gdark:text-white theme-vdark:text-white">{targetName} at {format(targetDate, "h:mm a")}</p>
-        <div className="flex space-x-5">
-            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-5 w-36">{hoursLeft}</div>
+        <p className="text-black theme-gdark:text-white theme-vdark:text-white p-3 text-3xl">{targetName} at {format(targetDate, "h:mm a")}</p>
+        <div className="flex space-x-5 pb-2 items-center">
+            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-8 rounded-3xl">{hoursLeft}</div>
             <p className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white">:</p>
-            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-5 w-36">{numberTo2DigitString(minutesLeft)}</div>
+            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-8 rounded-3xl">{numberTo2DigitString(minutesLeft)}</div>
             <p className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white">:</p>
-            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-5 w-36">{numberTo2DigitString(secondsLeft)}</div>
+            <div className="text-8xl text-black theme-gdark:text-white theme-vdark:text-white bg-gray-200 theme-gdark:bg-gray-700 theme-vdark:bg-gray-700 p-8 rounded-3xl">{numberTo2DigitString(secondsLeft)}</div>
         </div>
     </>
 }

@@ -1,33 +1,61 @@
 import topBarLogo from "./assets/top_bar_logo.png";
 import defaultIcon from "./assets/default_icon.png";
+import Timer from "./components/Timer";
+import 'react-material-symbols/rounded';
+import { MaterialSymbol } from "react-material-symbols";
+
+const currentYear = new Date().getFullYear().toString();
+
+function getTeamIcon(teamNumber: number) {
+    return (
+    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
+        <img
+        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
+        onError={(e) => {
+            if (e.target) {
+                (e.target as HTMLImageElement).src = defaultIcon;
+            }
+        }}
+        />
+    </a>);
+};
+
+function getAllianceRow(teamNumber: number, rank: number, alliance: string) {
+    return (
+        <div className="flex drop-shadow-4xl mb-1">
+            {
+                alliance === "red" ?
+                <div className="w-1/4"></div> :
+                <>{/* Dev extends red alliance element length using this one weird trick!*/}</> 
+            }
+            <div className={alliance === "red" ? "bg-allianceLightRed w-3/5 min-w-max flex p-1 items-center" : "bg-allianceLightBlue w-3/5 flex p-1 items-center"}>
+                {getTeamIcon(teamNumber)}
+                <p className="pl-2">{teamNumber}</p>
+            </div>
+            <div className="bg-allianceDarkGray flex p-1 pr-5 items-center min-w-20">
+                <p className="pl-2">{rank}</p>
+            </div>
+        </div>
+    );
+}
 
 function getRankingRow(ranking: number, teamNumber: number, wins: number, losses: number, ties: number, yourTeam: boolean = false) {
-    const currentYear = new Date().getFullYear().toString();
     return (
         <tr className={yourTeam ? "bg-gray-800 text-white font-bold" : "odd:bg-gray-300 even:bg-gray-200"}>
             <td className="border-4 border-gray-400 p-2 pr-5">{ranking}</td>
             <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
                 <div className="flex items-center">
-                    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
-                        <img
-                            src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
-                            onError={(e) => {
-                                if (e.target) {
-                                    (e.target as HTMLImageElement).src = defaultIcon;
-                                }
-                            }}
-                        />
-                    </a>
+                    {getTeamIcon(teamNumber)}
                     <p className="pl-2">{teamNumber}</p>
                 </div>
             </td>
             <td className="border-4 border-gray-400 p-2 pl-5">
                 <div className="flex justify-end">
-                    {/* Wins */} <p className="text-green-700">{wins}</p>
+                    <p className="text-green-700">{wins}</p>
                     -
-                    {/* Losses */} <p className="text-red-700">{losses}</p>
+                    <p className="text-red-700">{losses}</p>
                     -
-                    {/* Ties */} <p>{ties}</p>
+                    <p>{ties}</p>
                 </div>
             </td>
         </tr>
@@ -38,11 +66,16 @@ function App() {
     return (
         <main>
             {/* Top bar */}
-            <div className="flex h-[10vh] bg-top-bar bg-cover items-center">
+            <div className="flex h-[10vh] bg-top-bar bg-cover items-center justify-between">
                 <img className="h-[10vh]" src={topBarLogo} />
-                <p className="text-white pl-[40px] text-2xl">Los Angeles Regional 2024 - Updated 4 minutes ago</p>
-                <p className="text-white pl-[80px] text-2xl">Happening now: Qualification 1</p>
-                <p className="text-white pl-[80px] text-2xl">Now queueing: Qualification 3</p>
+                <p className="text-white text-2xl">Los Angeles Regional 2024 - Updated 4 minutes ago</p>
+                <p className="text-white text-2xl">Happening now: Qualification 1</p>
+                <p className="text-white text-2xl">Now queueing: Qualification 3</p>
+                <div className="flex justify-center w-[11vw] items-center">
+                    <button>
+                        <MaterialSymbol icon="settings" fill color="black" size={96}/>
+                    </button>
+                </div>
             </div>
             <div className="flex h-[90vh]">
                 {/* Rankings */}
@@ -69,18 +102,34 @@ function App() {
                     </table> 
                 </div>
                 {/* Next match */}
-                <div className="border-l-2 border-r-2 border-gray-500 w-full flex flex-col items-center">
+                <div className="border-l-2 border-r-2 border-gray-500 w-full h-[90vh] flex flex-col items-center">
                     <h1 className="p-5 text-3xl font-bold">Qualification 4 of 74</h1>
                     
-                    <p className="p-3 text-3xl">Queuing at 9:45 AM</p>
+                    <Timer targetName="Queuing" targetDate={new Date(2024, 8, 12, 9, 45, 0)} />
+                    <Timer targetName="Starting" targetDate={new Date(2024, 8, 12, 10, 1, 0)} />
                     
-                    <p className="p-3 text-3xl">Starting at 10:01 AM</p>
-                    
-                    <div className="flex p-3 text-3xl">
+                    <div className="flex p-3 pb-10 text-3xl">
                         <p>Team 4201 will be on the</p>
                         <p className="text-red-500 pl-2 pr-2 font-bold">RED</p>
                         <p>alliance</p>
                     </div>
+                    
+                    <div className="w-[53vw] text-3xl relative items-center flex text-white flex-grow">
+                        <div className="w-1/2 bg-allianceDarkBlue rounded-tl-3xl p-3 min-h-full flex flex-col justify-center">
+                            {getAllianceRow(4501, 21, "blue")}
+                            {getAllianceRow(6658, 20, "blue")}
+                            {getAllianceRow(968, 19, "blue")}
+                        </div>
+                        <div className="absolute left-1/2 transform -translate-x-1/2 bg-gray-100 drop-shadow-4xl">
+                            <p className="text-3xl text-black p-5 font-bold">VS</p>
+                        </div>
+                        <div className="w-1/2 bg-allianceDarkRed rounded-tr-3xl p-3 min-h-full flex flex-col justify-center">
+                            {getAllianceRow(6000, 7, "red")}
+                            {getAllianceRow(599, 8, "red")}
+                            {getAllianceRow(4201, 9, "red")}
+                        </div>
+                    </div>
+                    
                 </div>
                 {/* Match list */}
                 <div className="w-[40vw]">
@@ -88,7 +137,9 @@ function App() {
                 </div>
             </div>
             {/* Announcements bar */}
-            <div></div>
+            <div className="fixed bottom-0 bg-lime-100 text-green-900 text-2xl p-1 rounded-xl border border-green-900 w-full">
+                <p>Parts request: Team 7415 [C4] is requesting 4x ¼-20 5” fully threaded hex head bolts (12 minutes ago)</p>
+            </div>
         </main>
     );
 }
