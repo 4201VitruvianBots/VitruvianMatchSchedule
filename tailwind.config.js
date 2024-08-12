@@ -1,4 +1,5 @@
 import plugin from 'tailwindcss/plugin';
+import defaultTheme from 'tailwindcss/defaultTheme';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -8,10 +9,17 @@ export default {
     ],
     theme: {
         extend: {
+                backgroundColor: ['odd', 'even'],
+                backgroundImage: theme => ({
+                    'top-bar': "url('./src/assets/top_bar.png')",
+                }),
                 colors: {
                         barGreen: '#38761d',
                         buttonOuterGreen: "#499529",
                         buttonInnerGreen: "#6aa84f",
+                },
+                fontFamily: {
+                    'sans': ['Arial', ...defaultTheme.fontFamily.sans],
                 },
         },
     },
