@@ -105,8 +105,8 @@ function App() {
                 <div className="border-l-2 border-r-2 border-gray-500 w-full h-[90vh] flex flex-col items-center">
                     <h1 className="p-5 text-3xl font-bold">Qualification 4 of 74</h1>
                     
-                    <Timer targetName="Queuing" targetDate={new Date(2024, 8, 12, 9, 45, 0)} />
-                    <Timer targetName="Starting" targetDate={new Date(2024, 8, 12, 10, 1, 0)} />
+                    <Timer targetName="Queuing" targetDate={new Date(2024, 8, 13, 9, 45, 0)} />
+                    <Timer targetName="Starting" targetDate={new Date(2024, 8, 13, 10, 1, 0)} />
                     
                     <div className="flex p-3 pb-10 text-3xl">
                         <p>Team 4201 will be on the</p>
@@ -133,7 +133,39 @@ function App() {
                 </div>
                 {/* Match list */}
                 <div className="w-[40vw]">
+                    <div className="flex flex-col">
+                        <div className="flex justify-between">
+                            <h1 className="text-3xl p-3">Upcoming Matches</h1>
+                            <button className="pr-3">
+                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
+                            </button>
+                        </div>
+                        
+                        <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
+                            <tr>
+                                <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>Q4</td>
+                                <td className="border-4 border-gray-400 p-2 bg-red-400">6000</td>
+                                <td className="border-4 border-gray-400 p-2 bg-red-400">599</td>
+                                <td className="border-4 border-gray-400 p-2 bg-red-400 font-bold">4201</td>
+                                <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
+                                    <p>Q 9:45</p>
+                                    <p>S 10:01</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td className="border-4 border-gray-400 p-2 bg-blue-400">4501</td>
+                                <td className="border-4 border-gray-400 p-2 bg-blue-400">6658</td>
+                                <td className="border-4 border-gray-400 p-2 bg-blue-400">968</td>
+                            </tr>
+                        </table> 
+                    </div>
                     
+                    <div className="flex justify-between">
+                        <h1 className="text-3xl p-3">Previous Matches</h1>
+                        <button className="pr-3">
+                            <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
+                        </button>
+                    </div>
                 </div>
             </div>
             {/* Announcements bar */}
