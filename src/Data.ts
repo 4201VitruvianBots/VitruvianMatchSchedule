@@ -1,26 +1,28 @@
 import dayjs from 'dayjs';
-import { teamKeyToNumber, shortenMatchName } from './TBA';
+import { teamKeyToNumber } from './TBA';
+
+interface TeamMatch {
+    match_name: string;
+    red1: number;
+    red2: number;
+    red3: number;
+    blue1: number;
+    blue2: number;
+    blue3: number;
+    queue_time: Date;
+    start_time: Date;
+    break_after: string | null;
+}
 
 interface AppData {
-    updated_at: dayjs.Dayjs;
+    updated_at: Date;
     current_match: string | null;
     queuing_match: string | null;
     
-    team_matches: {
-        match_name: string;
-        red1: number;
-        red2: number;
-        red3: number;
-        blue1: number;
-        blue2: number;
-        blue3: number;
-        queue_time: string;
-        start_time: string;
-        break_after: string | null;
-    }[];
+    team_matches: TeamMatch[];
     
     latest_announcement: string;
-    announcement_sent_at: dayjs.Dayjs;
+    announcement_sent_at: Date;
 };
 
 interface RankingData {
@@ -41,7 +43,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
     });
     const nexusData = await nexusResponse.json();
     
-    data.updated_at = dayjs.unix(nexusData.dataAsOfTime / 1000);
+    data.updated_at = dayjs.unix(nexusData.dataAsOfTime / 1000).toDate();
     
     const teamMatches = nexusData.matches.filter((match: any) => {
         return match.redTeams.includes(teamNumber.toString()) || match.blueTeams.includes(teamNumber.toString());
@@ -56,8 +58,8 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
             blue1: parseInt(match.blueTeams[0]),
             blue2: parseInt(match.blueTeams[1]),
             blue3: parseInt(match.blueTeams[2]),
-            queue_time: dayjs.unix(match.times.estimatedQueueTime / 1000).format('h:mm'),
-            start_time: dayjs.unix(match.times.estimatedStartTime / 1000).format('h:mm'),
+            queue_time: dayjs.unix(match.times.estimatedQueueTime / 1000).toDate(),
+            start_time: dayjs.unix(match.times.estimatedStartTime / 1000).toDate(),
             break_after: match.breakAfter,
         };
     });
@@ -79,7 +81,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
     }
     
     data.latest_announcement = nexusData.announcements[nexusData.announcements.length - 1].announcement;
-    data.announcement_sent_at = dayjs.unix(nexusData.announcements[nexusData.announcements.length - 1].postedTime / 1000);
+    data.announcement_sent_at = dayjs.unix(nexusData.announcements[nexusData.announcements.length - 1].postedTime / 1000).toDate();
     
     return data;
 }
@@ -106,4 +108,4 @@ async function getRankingData(tbaApiKey: string, eventKey: string) {
 }
 
 export { getAppData, getRankingData};
-export type { AppData, RankingData };
+export type { AppData, RankingData, TeamMatch };

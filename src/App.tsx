@@ -3,6 +3,9 @@ import defaultIcon from "./assets/default_icon.png";
 import Timer from "./components/Timer";
 import 'react-material-symbols/rounded';
 import { MaterialSymbol } from "react-material-symbols";
+import { getAppData, getRankingData, AppData, RankingData, TeamMatch } from "./Data";
+import dayjs from "dayjs";
+import { useState, useEffect } from "react";
 
 const currentYear = new Date().getFullYear().toString();
 
@@ -39,14 +42,16 @@ function getAllianceRow(teamNumber: number, rank: number, alliance: string) {
     );
 }
 
-function getRankingRow(ranking: number, teamNumber: number, wins: number, losses: number, ties: number, yourTeam: boolean = false) {
+function getRankingRow(ranking: RankingData, yourTeam: boolean = false) {
+    const {rank, team_number, wins, losses, ties } = ranking;
+    
     return (
         <tr className={yourTeam ? "bg-gray-800 text-white font-bold" : "odd:bg-gray-300 even:bg-gray-200"}>
-            <td className="border-4 border-gray-400 p-2 pr-5">{ranking}</td>
+            <td className="border-4 border-gray-400 p-2 pr-5">{rank}</td>
             <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
                 <div className="flex items-center">
-                    {getTeamIcon(teamNumber)}
-                    <p className="pl-2">{teamNumber}</p>
+                    {getTeamIcon(team_number)}
+                    <p className="pl-2">{team_number}</p>
                 </div>
             </td>
             <td className="border-4 border-gray-400 p-2 pl-5">
@@ -62,15 +67,58 @@ function getRankingRow(ranking: number, teamNumber: number, wins: number, losses
     );
 }
 
+function getMatchTable(teamMatch: TeamMatch) {
+    const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
+    
+    return (
+        <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
+            <tr>
+                <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
+                <td className="border-4 border-gray-400 p-2 bg-red-400">{teamMatch.red1}</td>
+                <td className="border-4 border-gray-400 p-2 bg-red-400">{teamMatch.red2}</td>
+                <td className="border-4 border-gray-400 p-2 bg-red-400 font-bold">{teamMatch.red3}</td>
+                <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
+                    <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
+                    <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td className="border-4 border-gray-400 p-2 bg-blue-400">{teamMatch.blue1}</td>
+                <td className="border-4 border-gray-400 p-2 bg-blue-400">{teamMatch.blue2}</td>
+                <td className="border-4 border-gray-400 p-2 bg-blue-400">{teamMatch.blue3}</td>
+            </tr>
+        </table> 
+    );
+}
+
 function App() {
+    let nexusApiKey: string = "Yq-Uko9BMim3iXQbP0AAA-xr-C8";
+    let tbaApiKey: string = "0aEOFkhqU9q6qoWdYv2FevqVN0XRlzj4axcqp3coPz5fBjHPJiXvjtuPkuMbJx35";
+    
+    const [appData, setAppData] = useState({} as AppData);
+
+    useEffect(() => {
+        getAppData(nexusApiKey, "demo6517", 100)
+            .then(data => setAppData(data))
+            .catch(error => console.error(error));
+    }, []);
+    
+    const [rankingData, setRankingData] = useState({} as RankingData);
+    
+    useEffect(() => {
+        getRankingData(tbaApiKey, "2024cala")
+            .then(data => setRankingData(data))
+            .catch(error => console.error(error));
+    }, []);
+
     return (
         <main>
             {/* Top bar */}
             <div className="flex h-[10vh] bg-top-bar bg-cover items-center justify-between">
                 <img className="h-[10vh]" src={topBarLogo} />
-                <p className="text-white text-2xl">Los Angeles Regional 2024 - Updated 4 minutes ago</p>
-                <p className="text-white text-2xl">Happening now: Qualification 1</p>
-                <p className="text-white text-2xl">Now queueing: Qualification 3</p>
+                <p className="text-white text-2xl">Los Angeles Regional 2024 - Updated {dayjs(appData.updated_at).fromNow()}</p>
+                <p className="text-white text-2xl">Happening now: {appData.current_match}</p>
+                <p className="text-white text-2xl">Now queueing: {appData.queuing_match}</p>
                 <div className="flex justify-center w-[11vw] items-center">
                     <button>
                         <MaterialSymbol icon="settings" fill color="black" size={96}/>
@@ -82,23 +130,18 @@ function App() {
                 <div className="w-[40vw]">
                     <div className="flex justify-center items-end pb-5">
                         <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
-                        <p className="text-xl text-gray-600">as of Qualification 2</p>
+                        <p className="text-xl text-gray-600">as of {appData.current_match}</p>
                     </div>
                     <table className="border-4 border-gray-400 text-2xl mx-auto">
-                        {getRankingRow(1, 368, 10, 0, 0)}
-                        {getRankingRow(2, 1197, 7, 3, 0)}
-                        {getRankingRow(3, 7415, 9, 1, 0)}
-                        {getRankingRow(4, 9408, 7, 3, 0)}
-                        {getRankingRow(5, 687, 9, 1, 0)}
-                        {getRankingRow(6, 4201, 8, 2, 0, true)}
-                        {getRankingRow(7, 1452, 6, 4, 0)}
-                        {getRankingRow(8, 1148, 6, 4, 0)}
-                        <tr className="odd:bg-gray-300 even:bg-gray-200">
-                            <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
-                        </tr>
-                        {getRankingRow(9, 5199, 6, 4, 0)}
-                        {getRankingRow(10, 7042, 7, 3, 0)}
-                        {getRankingRow(11, 7137, 6, 4, 0)}
+                            {Array.isArray(rankingData) && rankingData.slice(0, 8).map((ranking) => (
+                                getRankingRow(ranking)
+                            ))}
+                            <tr className="odd:bg-gray-300 even:bg-gray-200">
+                                <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
+                            </tr>
+                            {Array.isArray(rankingData) && rankingData.slice(8, 11).map((ranking) => (
+                                getRankingRow(ranking)
+                            ))}
                     </table> 
                 </div>
                 {/* Next match */}
@@ -141,30 +184,28 @@ function App() {
                             </button>
                         </div>
                         
-                        <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
-                            <tr>
-                                <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>Q4</td>
-                                <td className="border-4 border-gray-400 p-2 bg-red-400">6000</td>
-                                <td className="border-4 border-gray-400 p-2 bg-red-400">599</td>
-                                <td className="border-4 border-gray-400 p-2 bg-red-400 font-bold">4201</td>
-                                <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
-                                    <p>Q 9:45</p>
-                                    <p>S 10:01</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="border-4 border-gray-400 p-2 bg-blue-400">4501</td>
-                                <td className="border-4 border-gray-400 p-2 bg-blue-400">6658</td>
-                                <td className="border-4 border-gray-400 p-2 bg-blue-400">968</td>
-                            </tr>
-                        </table> 
+                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                            // Only show matches that are in the future
+                            match.start_time > new Date()
+                        )).map((match) => (
+                            getMatchTable(match)
+                        ))}
                     </div>
                     
-                    <div className="flex justify-between">
-                        <h1 className="text-3xl p-3">Previous Matches</h1>
-                        <button className="pr-3">
-                            <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
-                        </button>
+                    <div className="flex flex-col">
+                        <div className="flex justify-between">
+                            <h1 className="text-3xl p-3">Previous Matches</h1>
+                            <button className="pr-3">
+                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
+                            </button>
+                        </div>
+                        
+                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                            // Only show matches that are in the future
+                            match.start_time < new Date()
+                        )).map((match) => (
+                            getMatchTable(match)
+                        ))}
                     </div>
                 </div>
             </div>
