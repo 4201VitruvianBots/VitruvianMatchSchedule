@@ -11,7 +11,7 @@ export default {
         extend: {
                 backgroundColor: ['odd', 'even'],
                 backgroundImage: theme => ({
-                    'top-bar': "url('./src/assets/top_bar.png')",
+                    'top-bar': "url('/top_bar.png')",
                 }),
                 colors: {
                         barGreen: '#005F00',
