@@ -178,5 +178,5 @@ function extractNumber(str: string) {
     return match ? parseInt(match[0]) : 0;
 }
 
-export { getTeamMatches, getAllEvents, shortenMatchName, extractNumber};
+export { getTeamMatches, getAllEvents, shortenMatchName, extractNumber, teamKeyToNumber};
 export type { EventInfo };

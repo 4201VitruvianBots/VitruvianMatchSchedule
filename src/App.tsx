@@ -1,16 +1,17 @@
-import './index.css';
-import { useEffect, useState } from 'react';
+import topBarLogo from "./assets/top_bar_logo.png";
+import defaultIcon from "./assets/default_icon.png";
+import Timer from "./components/Timer";
 import 'react-material-symbols/rounded';
-import { MaterialSymbol } from 'react-material-symbols';
-import EditableButton from './components/EditableButton';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import Match, { MatchInfo } from './components/Match';
-import Timer from './components/Timer';
-import { getTeamMatches, extractNumber, EventInfo, getAllEvents } from './TBA';
-import { useLocalStorage } from '@tater-archives/react-use-localstorage';
+import { MaterialSymbol } from "react-material-symbols";
+import { getAppData, getRankingData, AppData, RankingData, TeamMatch, getAllEvents, Event } from "./Data";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { useState, useEffect } from "react";
+import { useLocalStorage } from "@tater-archives/react-use-localstorage";
 
 dayjs.extend(relativeTime);
+
+const currentYear = new Date().getFullYear().toString();
 
 type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
 
@@ -21,83 +22,116 @@ const themes: Record<Theme, string> = {
     gdark: "Generic Dark",
 };
 
-function generateMatchTransitions(match1: MatchInfo, match2: MatchInfo) {
-    // Cover the case where there is no next match
-    if (match2 == undefined) {
-        return [""];
-    // Cover the case where both matches are qual/playoff matches
-    } else if ((match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Qual")) || (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Playoff"))) {
-        return [`︙ ${extractNumber(match2.matchName) - extractNumber(match1.matchName)} match${extractNumber(match2.matchName) - extractNumber(match1.matchName) != 1 ? "es" : ""}`];
-    // Cover the case where one match is a qual match and the other is a playoff match
-    } else if (match1.matchName.startsWith("Qual") && match2.matchName.startsWith("Playoff")) {
-        let allStrings = ["︙ Alliance selection"];
-        const qualMatchesLeft = match1.totalQualMatches - extractNumber(match1.matchName);
-        const playoffMatchesBefore = extractNumber(match2.matchName) - 1;
-        if (qualMatchesLeft > 0) allStrings = [`︙ ${qualMatchesLeft} match${qualMatchesLeft != 1 ? "es" : ""}`, ...allStrings];
-        if (playoffMatchesBefore > 0) allStrings.push(`︙ ${playoffMatchesBefore} match${playoffMatchesBefore != 1 ? "es" : ""}`);
-        return allStrings;
-    // Cover the case where one match is a playoff match and the other is a final match
-    } else if (match1.matchName.startsWith("Playoff") && match2.matchName.startsWith("Final")) {
-        const playoffMatchesLeft = match1.totalPlayoffMatches - extractNumber(match1.matchName);
-        const finalMatchesBefore = extractNumber(match2.matchName) - 1;
-        if ((playoffMatchesLeft > 0) || (finalMatchesBefore > 0)) return [`︙ ${playoffMatchesLeft + finalMatchesBefore} match${playoffMatchesLeft + finalMatchesBefore != 1 ? "es" : ""}`];
-        else return [""];
-    } else {
-        return [""];
-    }
+function getTeamIcon(teamNumber: number) {
+    return (
+    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
+        <img
+        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
+        onError={(e) => {
+            if (e.target) {
+                (e.target as HTMLImageElement).src = defaultIcon;
+            }
+        }}
+        />
+    </a>);
+};
+
+function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
+    return (
+        <div className="flex drop-shadow-4xl mb-1">
+            {
+                alliance === "red" ?
+                <div className="w-1/4"></div> :
+                <>{/* Dev extends red alliance element length using this one weird trick!*/}</> 
+            }
+            <div className={alliance === "red" ? "bg-allianceLightRed w-3/5 min-w-max flex p-1 items-center" : "bg-allianceLightBlue w-3/5 flex p-1 items-center"}>
+                {getTeamIcon(teamNumber)}
+                <p className="pl-2">{teamNumber}</p>
+            </div>
+            <div className="bg-allianceDarkGray flex p-1 pr-5 items-center min-w-20">
+                <p className="pl-2">{rank}</p>
+            </div>
+        </div>
+    );
 }
+
+function getRankingRow(ranking: RankingData, yourTeam: boolean = false) {
+    const {rank, team_number, wins, losses, ties } = ranking;
     
+    return (
+        <tr className={yourTeam ? "bg-gray-800 text-white font-bold" : "odd:bg-gray-300 even:bg-gray-200"}>
+            <td className="border-4 border-gray-400 p-2 pr-5">{rank}</td>
+            <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
+                <div className="flex items-center">
+                    {getTeamIcon(team_number)}
+                    <p className="pl-2">{team_number}</p>
+                </div>
+            </td>
+            <td className="border-4 border-gray-400 p-2 pl-5">
+                <div className="flex justify-end">
+                    <p className="text-green-700">{wins}</p>
+                    -
+                    <p className="text-red-700">{losses}</p>
+                    -
+                    <p>{ties}</p>
+                </div>
+            </td>
+        </tr>
+    );
+}
+
+function getMatchTable(teamMatch: TeamMatch, teamNumber: number) {
+    const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
+    
+    return (
+        <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
+            <tr>
+                <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
+                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
+                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
+                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
+                <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
+                    <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
+                    <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
+                </td>
+            </tr>
+            <tr>
+                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
+                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
+                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
+            </tr>
+        </table> 
+    );
+}
 
 function App() {
+    // Settings
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [delayMins, setDelayMins] = useState(0);
-    
-    const [lastRefresh, setLastRefresh] = useState(new Date());
-    const refreshMessage = dayjs(lastRefresh).fromNow();
-    
+    const [showPastEvents, setShowPastEvents] = useState(false);
     const [teamNumber, setTeamNumber] = useLocalStorage(0, "teamNumber");
-    const handleTeamNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTeamNumber(parseInt(event.target.value));
-    }
-    
-    const [apiKey, setApiKey] = useLocalStorage("", "apiKey");
-    const handleApiKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setApiKey(event.target.value);
-    }
+    const [tbaApiKey, setTbaApiKey] = useLocalStorage("", "tbaApiKey");
+    const [nexusApiKey, setNexusApiKey] = useLocalStorage("", "nexusApiKey");
     
     const [eventKey, setEventKey] = useLocalStorage("", "eventKey");
+    const [eventName, setEventName] = useLocalStorage("Select an event", "eventName");
     const handleEventSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setEventKey(event.target.value);
+        setEventName(event.target.selectedOptions[0].text);
     };
     
-    const [showPastEvents, setShowPastEvents] = useLocalStorage(false, "showPastEvents");
-    const handleShowPastEventsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setShowPastEvents(event.target.checked);
-        refreshEvents();
-    }
-    
-    const [teamMatchInfos, setTeamMatchInfos] = useState<MatchInfo[]>([]);
-    const [events, setEvents] = useState<EventInfo[]>([]);
-    
-    const refreshTeamMatches = () => {
-        getTeamMatches(teamNumber, eventKey, apiKey).then((matches: MatchInfo[]) => {
-                setTeamMatchInfos(matches);
-    })};
-
-    const refreshEvents = () => {
-        getAllEvents(apiKey, showPastEvents).then((events: EventInfo[]) => {
-            events.push({ eventKey: "", eventName: "Select an event", teams: [] });
-            setEvents(events);
-        });
-    }
-    useEffect(refreshTeamMatches, [teamNumber, eventKey, apiKey, delayMins]);
-    useEffect(refreshEvents, [apiKey]);
-    
-    const refreshData = () => {
-        refreshTeamMatches();
-        refreshEvents();
-        setLastRefresh(new Date());
-    }
+    const baseEvent: Event = {
+        key: "",
+        name: "Select an event",
+        start_date: new Date(),
+        end_date: new Date(),
+        teams: [],
+    };
+    const [events, setEvents] = useState([baseEvent] as Event[]);
+    useEffect(() => {
+        getAllEvents(tbaApiKey)
+            .then(events => setEvents([baseEvent, ...events]))
+            .catch(error => console.error(error));
+    }, [tbaApiKey]);
 
     const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
 
@@ -105,41 +139,105 @@ function App() {
         setTheme(event.target.value as Theme);
     }
     
-    const nextMatch = teamMatchInfos.find((match) => match.matchStart && match.matchStart > new Date());
+    // App state
+    const [appData, setAppData] = useState({} as AppData);
+
+    const refreshAppData = () => {
+        getAppData(nexusApiKey, eventKey, teamNumber)
+            .then(data => setAppData(data))
+            .catch(error => console.error(error));
+        console.log(appData);
+    }
+    useEffect(refreshAppData, [eventKey]);
+    
+    const [rankingData, setRankingData] = useState({} as RankingData);
+    
+    const refreshRankingData = () => {
+        getRankingData(tbaApiKey, eventKey)
+            .then(data => setRankingData(data))
+            .catch(error => console.error(error));
+    };
+    useEffect(refreshRankingData, [eventKey]);
+    
+    // Timer properties
+    let nextMatch: TeamMatch | null = null;
+    if (Array.isArray(appData.team_matches)) {
+        nextMatch = appData.team_matches.filter((match) => (
+                match.start_time > new Date()
+        ))[0];
+    } else {
+        nextMatch = null;
+    }
+    
+    let totalMatches = null;
+    if (nextMatch?.match_name.startsWith("Practice")) {
+        totalMatches = appData.number_of_practice_matches;
+    } else if (nextMatch?.match_name.startsWith("Qualification")) {
+        totalMatches = appData.number_of_qual_matches;
+    } else {
+        totalMatches = null;
+    }
+    
+    let redAlliance = null;
+    if (nextMatch?.red1 === teamNumber || nextMatch?.red2 === teamNumber || nextMatch?.red3 === teamNumber) {
+        redAlliance = true;
+    } else if (nextMatch?.blue1 === teamNumber || nextMatch?.blue2 === teamNumber || nextMatch?.blue3 === teamNumber) {
+        redAlliance = false;
+    } else {
+        redAlliance = null;
+    }
+    
+    let nextMatchRankings = ["", "", "", "", "", ""];
+    if (Array.isArray(rankingData) && nextMatch) {
+        try {
+        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue1).rank.toString();
+        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue2).rank.toString();
+        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue3).rank.toString();
+        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red1).rank.toString();
+        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red2).rank.toString();
+        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red3).rank.toString();
+        } catch (error) {
+            console.error(error);
+        }
+    }
     
     return (
-        <main className={`theme-${theme}`}>
+        <main>
+            {/* Settings menu */}
             {settingsOpen &&
-                <div className="flex fixed inset-0">
+                <div className="flex fixed inset-0 z-10">
                     <div className="w-1/2 h-screen bg-black bg-opacity-50" onClick={() => setSettingsOpen(!settingsOpen)}/>
                     <div className="block w-1/2">
-                        <div className="bg-blue-700 theme-gdark:bg-blue-700 theme-vlight:bg-barGreen theme-vdark:bg-barGreen max-h-[10vh] px-5 flex flex-auto justify-end z-50">
+                        <div className="bg-barGreen max-h-[10vh] px-5 flex flex-auto justify-end z-50">
+                        <div className="flex justify-center w-[9vw] items-center">
                             <button onClick={() => setSettingsOpen(!settingsOpen)}>
                                 <MaterialSymbol icon="settings" fill color="white" size={96}/>
                             </button>
                         </div>
-                        <div className="min-h-full bg-white theme-gdark:bg-gray-900 theme-vdark:bg-gray-900 z-50 text-black theme-gdark:text-white theme-vdark:text-white">
-                            <h1 className="text-4xl p-5">Event</h1>
-                            <div className="pl-5">
-                                <select className="bg-gray-200 theme-gdark:bg-gray-800 theme-vdark:bg-gray-800 text-4xl max-w-96" value={eventKey} onChange={handleEventSelectChange}>
-                                    {events.map((event) => <option value={event.eventKey}>{event.eventName}</option>)}
+                        </div>
+                        <div className="min-h-full bg-white z-50">
+                            <h1 className="text-3xl p-5">Event</h1>
+                            <div className="pl-5 pb-5">
+                                <select className="bg-gray-200 text-3xl max-w-96" value={eventKey} onChange={handleEventSelectChange}>
+                                    {events.filter(event => showPastEvents || (dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())).map((event) => <option value={event.key}>{event.name}</option>)}
                                 </select>
                             </div>
-                            <br />
-                            <h1 className="text-4xl p-5">Team Number</h1>
                             <div className="pl-5">
-                                <input className="bg-gray-200 theme-gdark:bg-gray-800 theme-vdark:bg-gray-800 text-4xl max-w-32" type="number" value={teamNumber} onChange={handleTeamNumberChange}></input>
+                                <input className="w-6 h-6" type="checkbox" checked={showPastEvents} onChange={e => setShowPastEvents(e.target.checked)}/>
+                                <label className="text-3xl p-5">Show past events</label>
                             </div>
-                            <br />
-                            <h1 className="text-4xl p-5">Theme</h1>
+                            <h1 className="text-3xl p-5">Team Number</h1>
                             <div className="pl-5">
-                                <select className="bg-gray-200 theme-gdark:bg-gray-800 theme-vdark:bg-gray-800 text-4xl max-w-96" value={theme} onChange={handleThemeChange}>
+                                <input className="bg-gray-200 text-3xl max-w-32" type="number" value={teamNumber} onChange={e => setTeamNumber(parseInt(e.target.value))}></input>
+                            </div>
+                            <h1 className="text-3xl p-5">Theme</h1>
+                            <div className="pl-5">
+                                <select className="bg-gray-200 text-3xl max-w-96" value={theme} onChange={handleThemeChange}>
                                     {Object.entries(themes).map(([id, name]) => <option value={id} >{name}</option>)}
                                 </select>
                             </div>
-                            <br />
                             <div className="flex items-center">
-                                <h1 className="text-4xl p-5">API Key</h1>
+                                <h1 className="text-3xl p-5">TBA API Key</h1>
                                 <form>
                                     <button formAction="https://www.thebluealliance.com/account#api-read-key-add" formTarget="_blank" title="The Read API key from The Blue Alliance (TBA) the app will use to gather data.">
                                             <MaterialSymbol icon="help" size={36} />
@@ -147,18 +245,28 @@ function App() {
                                 </form>
                             </div>
                             <div className="pl-5">
-                                <input className="bg-gray-200 theme-gdark:bg-gray-800 theme-vdark:bg-gray-800 text-4xl" type="string" value={apiKey} onChange={handleApiKeyChange}></input>
+                                <input className="bg-gray-200 text-3xl" type="string" value={tbaApiKey} onChange={e => setTbaApiKey(e.target.value)}></input>
                             </div>
-                            <br />
-                            <div className="pl-5">
-                                <input className="w-6 h-6" type="checkbox" value={showPastEvents ? "true" : "false"} onChange={handleShowPastEventsChange}/>
-                                <label className="text-4xl p-5">Show past events</label>
+                            <div className="flex items-center">
+                                <h1 className="text-3xl p-5">Nexus API Key</h1>
+                                <form>
+                                    <button formAction="https://frc.nexus/en/api" formTarget="_blank" title="The Pull API key from Nexus the app will use to gather accurate real-time event data.">
+                                            <MaterialSymbol icon="help" size={36} />
+                                    </button>
+                                </form>
                             </div>
-                            <br />
+                            <div className="pl-5 pb-5">
+                                <input className="bg-gray-200 text-3xl" type="string" value={nexusApiKey} onChange={e => setNexusApiKey(e.target.value)}></input>
+                            </div>
                             <div className="flex justify-center items-center">
-                                <h1 className="text-2xl p-5">Powered by The Blue Alliance</h1>
-                                <a href="https://www.thebluealliance.com/">
+                                <h1 className="text-xl p-5">
+                                    Powered by <a href="https://www.thebluealliance.com/" target="_blank" className="text-blue-500 hover:underline">The Blue Alliance</a> and <a href="https://frc.nexus/" target="_blank" className="text-blue-500 hover:underline">Nexus</a>
+                                </h1>
+                                <a href="https://www.thebluealliance.com/" target="_blank" className="pr-5">
                                     <img src="tbaLogo.png" width={48} className="object-scale-down"/>
+                                </a>
+                                <a href="https://frc.nexus/" target="_blank">
+                                    <img src="nexusLogo.svg" width={48} className="object-scale-down"/>
                                 </a>
                             </div>
                         </div>
@@ -166,72 +274,125 @@ function App() {
                 </div>
             }
             
-            <div className="grid grid-rows-[auto_1fr_auto] h-screen">
-                <div className="bg-blue-700 theme-gdark:bg-blue-700 theme-vlight:bg-barGreen theme-vdark:bg-barGreen min-h-[10vh] w-full px-5 flex flex-auto justify-between">
-                    <img src="4201logo.png" width={theme === "vlight" || theme === "vdark" ? 100 : 0} className="object-scale-down"/>
+            {/* Top bar */}
+            <div className="flex h-[10vh] bg-top-bar bg-cover items-center justify-between">
+                <img className="h-[10vh]" src={topBarLogo} />
+                {eventName == "Select an event" ? 
+                    <p className="text-white text-2xl">Select an event to get started</p>
+                    :
+                    <>
+                    <p className="text-white text-2xl">{eventName} - Updated {dayjs(appData.updated_at).fromNow()}</p>
+                    <p className="text-white text-2xl">Happening now: {appData.current_match}</p>
+                    <p className="text-white text-2xl">Now queueing: {appData.queuing_match}</p>
+                    </>
+                }
+                <div className="flex justify-center w-[11vw] items-center">
                     <button onClick={() => setSettingsOpen(!settingsOpen)}>
-                        <MaterialSymbol icon="settings" fill color="white" size={96}/>
+                        <MaterialSymbol icon="settings" fill color="black" size={96}/>
                     </button>
                 </div>
-                
-                <div className="p-8 gap-8 grid grid-cols-[1fr_auto_1fr] min-h-0 bg-white theme-gdark:bg-gray-900 theme-vdark:bg-gray-900">
-                    <div className="space-y-5 overflow-y-auto">
-                        {teamMatchInfos.length === 0
-                            ? <p className="text-4xl flex justify-center text-gray-500">{((eventKey !== "" && teamNumber !== 0)) ? "No matches for this event" : "No team or event selected"}</p>
-                            : teamMatchInfos.map((match, index, array) =>
-                                <>
-                                    <Match matchInfo={match} teamNumber={teamNumber} delayMins={delayMins} mostRecentMatch={match === nextMatch}/>
-                                    {generateMatchTransitions(match, array[index+1]).map((text) => (<p className="text-2xl theme-gdark:text-white theme-vdark:text-white">{text}</p>))}
-                                </>
-                            )
-                        }
+            </div>
+            <div className="flex h-[90vh]">
+                {/* Rankings */}
+                <div className="w-[40vw]">
+                    <div className="flex justify-center items-end pb-5">
+                        <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
+                        <p className="text-xl text-gray-600">as of {appData.current_match}</p>
                     </div>
-                    <div className="w-0.5 bg-gray-500" />
-                    <div className="text-3xl text-center space-y-5 mx-auto">
-                        {nextMatch ?
-                            // Display the time until the next match
-                            <>
-                                <p className="font-bold text-black theme-gdark:text-white theme-vdark:text-white">{nextMatch.matchName}</p>
-                                <Timer targetName="Queuing" targetDate={nextMatch.queue || new Date()}/>
-                                <Timer targetName="Match starts" targetDate={nextMatch.matchStart || new Date()}/>
-                            </>
-                        :
-                            <p className="text-4xl flex justify-center text-gray-500" >No upcoming matches</p>
-                        }
-                    </div>
+                    <table className="border-4 border-gray-400 text-2xl mx-auto">
+                            {Array.isArray(rankingData) && rankingData.slice(0, 8).map((ranking) => (
+                                getRankingRow(ranking, ranking.team_number === teamNumber)
+                            ))}
+                            <tr className="odd:bg-gray-300 even:bg-gray-200">
+                                <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
+                            </tr>
+                            {Array.isArray(rankingData) && rankingData.slice(8, 11).map((ranking) => (
+                                getRankingRow(ranking, ranking.team_number === teamNumber)
+                            ))}
+                    </table> 
                 </div>
-                
-                <div className="bg-blue-700 theme-gdark:bg-blue-700 theme-vlight:bg-barGreen theme-vdark:bg-barGreen min-h-[10vh] max-h-[10vh] w-full block h">
-                    <br />
-                    <div className="px-5 grid grid-cols-2">
-                        <div className="flex flex-auto">
-                            <div className="bg-blue-800 theme-gdark:bg-blue-800 theme-vlight:bg-buttonOuterGreen theme-vdark:bg-buttonOuterGreen max-w-[64px]">
-                                <button onClick={refreshData}>
-                                    <MaterialSymbol icon="refresh" fill color="white" size={50}/>
-                                </button>
+                {/* Next match */}
+                <div className="border-l-2 border-r-2 border-gray-500 w-full h-[90vh] flex flex-col items-center">
+                    {nextMatch ? 
+                        <>
+                            <h1 className="p-5 text-3xl font-bold">{nextMatch.match_name} {totalMatches && "of"} {totalMatches}</h1>
+                            
+                            <Timer targetName="Queuing" targetDate={nextMatch.queue_time} />
+                            <Timer targetName="Starting" targetDate={nextMatch.start_time} />
+                            
+                            <div className="flex p-3 pb-10 text-3xl">
+                            {redAlliance !== null && <>
+                                <p>Team {teamNumber} will be on the</p>
+                                {redAlliance ? <p className="text-red-500 pl-2 pr-2 font-bold">RED</p>
+                                : <p className="text-blue-500 pl-2 pr-2 font-bold">BLUE</p>}
+                                <p>alliance</p>
+                            </>}
                             </div>
-                            <p className="text-white text-3xl p-2">Refreshed {refreshMessage}</p>
+                            
+                            
+                            <div className="w-[53vw] text-3xl relative items-center flex text-white flex-grow">
+                                <div className="w-1/2 bg-allianceDarkBlue rounded-tl-3xl p-3 min-h-full flex flex-col justify-center">
+                                    {getAllianceRow(nextMatch.blue1, nextMatchRankings[0], "blue")}
+                                    {getAllianceRow(nextMatch.blue2, nextMatchRankings[1], "blue")}
+                                    {getAllianceRow(nextMatch.blue3, nextMatchRankings[2], "blue")}
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 bg-gray-100 drop-shadow-4xl">
+                                    <p className="text-3xl text-black p-5 font-bold">VS</p>
+                                </div>
+                                <div className="w-1/2 bg-allianceDarkRed rounded-tr-3xl p-3 min-h-full flex flex-col justify-center">
+                                    {getAllianceRow(nextMatch.red1, nextMatchRankings[3], "red")}
+                                    {getAllianceRow(nextMatch.red2, nextMatchRankings[4], "red")}
+                                    {getAllianceRow(nextMatch.red3, nextMatchRankings[5], "red")}
+                                </div>
+                            </div>
+                            
+                        </>
+                        :
+                        <h1 className="text-3xl p-5">No upcoming matches</h1>
+                    }
+                    
+                </div>
+                {/* Match list */}
+                <div className="w-[40vw]">
+                    <div className="flex flex-col">
+                        <div className="flex justify-between">
+                            <h1 className="text-3xl p-3">Upcoming Matches</h1>
+                            <button className="pr-3">
+                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
+                            </button>
                         </div>
                         
-                        <div className="flex flex-auto">
-                            <div className="bg-blue-800 theme-gdark:bg-blue-800 theme-vlight:bg-buttonOuterGreen theme-vdark:bg-buttonOuterGreen max-w-[64px]">
-                                <button onClick={() => setDelayMins(delayMins-1)}>
-                                    <p className="text-white text-3xl p-2 min-w-10">-</p>
-                                </button>
-                            </div>
-                            <div className="bg-blue-600 theme-gdark:bg-blue-600 theme-vlight:bg-buttonInnerGreen theme-vdark:bg-buttonInnerGreen max-w-[64px]">
-                                <EditableButton value={delayMins} setValue={setDelayMins} />
-                            </div>
-                            <div className="bg-blue-800 theme-gdark:bg-blue-800 theme-vlight:bg-buttonOuterGreen theme-vdark:bg-buttonOuterGreen max-w-[64px]">
-                                <button onClick={() => setDelayMins(delayMins+1)}>
-                                    <p className="text-white text-3xl p-2 min-w-10">+</p>
-                                </button>
-                            </div>
-                            <p className="text-white text-3xl p-2">Delay (minutes)</p>
+                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                            // Only show matches that are in the future
+                            match.start_time > new Date()
+                        )).map((match) => (
+                            getMatchTable(match, teamNumber)
+                        ))}
+                    </div>
+                    
+                    <div className="flex flex-col">
+                        <div className="flex justify-between">
+                            <h1 className="text-3xl p-3">Previous Matches</h1>
+                            <button className="pr-3">
+                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
+                            </button>
                         </div>
+                        
+                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                            // Only show matches that are in the past
+                            match.start_time < new Date()
+                        )).map((match) => (
+                            getMatchTable(match, teamNumber)
+                        ))}
                     </div>
                 </div>
             </div>
+            {/* Announcements bar */}
+            {appData.latest_announcement &&
+                <div className="fixed bottom-0 bg-lime-100 text-green-900 text-2xl p-1 rounded-xl border border-green-900 w-full">
+                    <p>{appData.latest_announcement} ({dayjs(appData.announcement_sent_at).fromNow()})</p>
+                </div>
+            }
         </main>
     );
 }
