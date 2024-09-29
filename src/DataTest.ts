@@ -1,4 +1,4 @@
-import { getAppData, getRankingData, AppData, RankingData } from './Data';
+import { getAppData, getRankingData } from './Data';
 
 let nexusApiKey: string = "Yq-Uko9BMim3iXQbP0AAA-xr-C8";
 let tbaApiKey: string = "0aEOFkhqU9q6qoWdYv2FevqVN0XRlzj4axcqp3coPz5fBjHPJiXvjtuPkuMbJx35";
