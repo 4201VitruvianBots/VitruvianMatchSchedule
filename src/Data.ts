@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { teamKeyToNumber } from './TBA';
 
 interface TeamMatch {
     match_name: string;
@@ -32,6 +31,43 @@ interface RankingData {
     losses: number;
     ties: number;
 }[];
+
+interface Event {
+    key: string;
+    name: string;
+    start_date: Date;
+    end_date: Date;
+    teams: number[];
+}
+
+interface EventFull {
+    key: string;
+    name: string;
+    event_code: string;
+    event_type: number;
+    district: {
+        abbreviation: string;
+        display_name: string;
+        key: string;
+        year: number;
+    };
+    city: string;
+    state_prov: string;
+    country: string;
+    start_date: string;
+    end_date: string;
+    year: number;
+}
+
+interface Team {
+    key: string;
+    team_number: number;
+    nickname: string;
+    name: string;
+    city: string;
+    state_prov: string;
+    country: string;
+}
 
 async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: number) {
     let data: AppData = {} as AppData;
@@ -107,5 +143,40 @@ async function getRankingData(tbaApiKey: string, eventKey: string) {
     return convertedRankingData;
 }
 
-export { getAppData, getRankingData};
-export type { AppData, RankingData, TeamMatch };
+async function getAllEvents(apiKey: string) {
+    const currentYear = new Date().getFullYear();
+    const events: EventFull[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
+        headers: {
+            'X-TBA-Auth-Key': apiKey,
+        },
+    })).json();
+    
+    // let teamEvents: EventFull[];
+    // if (pastEvents) {
+    //     teamEvents = events;
+    // } else {
+    //     teamEvents = events.filter(event => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date());
+    // }
+    
+    var simpleEvents = Promise.all(events
+        .map(async (event: EventFull) => ({
+            key: event.key,
+            name: event.name,
+            start_date: dayjs(event.start_date).toDate(),
+            end_date: dayjs(event.end_date).toDate(),
+            teams: (await (await fetch(`https://www.thebluealliance.com/api/v3/event/${event.key}/teams/simple`, {
+                headers: {
+                    'X-TBA-Auth-Key': apiKey,
+                },
+            },
+            )).json() as Team[]).map(team => team.team_number),
+        } as Event)));
+    return simpleEvents;
+}
+
+function teamKeyToNumber(teamKey: string) {
+    return parseInt(teamKey.substring(3));
+}
+
+export { getAppData, getRankingData, getAllEvents};
+export type { AppData, RankingData, TeamMatch, Event};

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { shortenMatchName } from '../TBA';
+import { shortenMatchName } from '../OldData';
 import { useEffect, useRef } from 'react';
 
 interface MatchInfo {

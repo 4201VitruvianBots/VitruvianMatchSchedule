@@ -14,7 +14,7 @@ export default {
                     'top-bar': "url('./src/assets/top_bar.png')",
                 }),
                 colors: {
-                        barGreen: '#38761d',
+                        barGreen: '#005F00',
                         buttonOuterGreen: "#499529",
                         buttonInnerGreen: "#6aa84f",
                         allianceDarkBlue: "#004172",
