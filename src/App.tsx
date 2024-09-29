@@ -6,9 +6,8 @@ import { MaterialSymbol } from "react-material-symbols";
 import { getAppData, getRankingData, AppData, RankingData, TeamMatch, getAllEvents, Event } from "./Data";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useLocalStorage } from "@tater-archives/react-use-localstorage";
-import { useInterval } from "@tater-archives/react-use-interval";
 
 dayjs.extend(relativeTime);
 
@@ -37,7 +36,7 @@ function getTeamIcon(teamNumber: number) {
     </a>);
 };
 
-function getAllianceRow(teamNumber: number, rank: number, alliance: string) {
+function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
     return (
         <div className="flex drop-shadow-4xl mb-1">
             {
@@ -161,10 +160,9 @@ function App() {
     useEffect(refreshRankingData, [eventKey]);
     
     // Timer properties
-    let nextMatch = null;
+    let nextMatch: TeamMatch | null = null;
     if (Array.isArray(appData.team_matches)) {
         nextMatch = appData.team_matches.filter((match) => (
-                // Only show matches that are in the future
                 match.start_time > new Date()
         ))[0];
     } else {
@@ -189,6 +187,19 @@ function App() {
         redAlliance = null;
     }
     
+    let nextMatchRankings = ["", "", "", "", "", ""];
+    if (Array.isArray(rankingData) && nextMatch) {
+        try {
+        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue1).rank.toString();
+        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue2).rank.toString();
+        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue3).rank.toString();
+        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red1).rank.toString();
+        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red2).rank.toString();
+        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red3).rank.toString();
+        } catch (error) {
+            console.error(error);
+        }
+    }
     
     return (
         <main>
@@ -318,21 +329,23 @@ function App() {
                             </>}
                             </div>
                             
+                            
                             <div className="w-[53vw] text-3xl relative items-center flex text-white flex-grow">
                                 <div className="w-1/2 bg-allianceDarkBlue rounded-tl-3xl p-3 min-h-full flex flex-col justify-center">
-                                    {getAllianceRow(nextMatch.blue1, 21, "blue")}
-                                    {getAllianceRow(nextMatch.blue2, 10, "blue")}
-                                    {getAllianceRow(nextMatch.blue3, 19, "blue")}
+                                    {getAllianceRow(nextMatch.blue1, nextMatchRankings[0], "blue")}
+                                    {getAllianceRow(nextMatch.blue2, nextMatchRankings[1], "blue")}
+                                    {getAllianceRow(nextMatch.blue3, nextMatchRankings[2], "blue")}
                                 </div>
                                 <div className="absolute left-1/2 transform -translate-x-1/2 bg-gray-100 drop-shadow-4xl">
                                     <p className="text-3xl text-black p-5 font-bold">VS</p>
                                 </div>
                                 <div className="w-1/2 bg-allianceDarkRed rounded-tr-3xl p-3 min-h-full flex flex-col justify-center">
-                                    {getAllianceRow(nextMatch.red1, 7, "red")}
-                                    {getAllianceRow(nextMatch.red2, 8, "red")}
-                                    {getAllianceRow(nextMatch.red3, 9, "red")}
+                                    {getAllianceRow(nextMatch.red1, nextMatchRankings[3], "red")}
+                                    {getAllianceRow(nextMatch.red2, nextMatchRankings[4], "red")}
+                                    {getAllianceRow(nextMatch.red3, nextMatchRankings[5], "red")}
                                 </div>
                             </div>
+                            
                         </>
                         :
                         <h1 className="text-3xl p-5">No upcoming matches</h1>
