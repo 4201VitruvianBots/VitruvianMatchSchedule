@@ -22,6 +22,9 @@ interface AppData {
     
     latest_announcement: string;
     announcement_sent_at: Date;
+    
+    number_of_practice_matches: number;
+    number_of_qual_matches: number;
 };
 
 interface RankingData {
@@ -78,7 +81,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         },
     });
     const nexusData = await nexusResponse.json();
-    
+
     data.updated_at = dayjs.unix(nexusData.dataAsOfTime / 1000).toDate();
     
     const teamMatches = nexusData.matches.filter((match: any) => {
@@ -116,8 +119,13 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         data.queuing_match = queuingMatches[queuingMatches.length - 1].label;
     }
     
-    data.latest_announcement = nexusData.announcements[nexusData.announcements.length - 1].announcement;
-    data.announcement_sent_at = dayjs.unix(nexusData.announcements[nexusData.announcements.length - 1].postedTime / 1000).toDate();
+    if (nexusData.announcements.length > 0) {
+        data.latest_announcement = nexusData.announcements[nexusData.announcements.length - 1].announcement;
+        data.announcement_sent_at = dayjs.unix(nexusData.announcements[nexusData.announcements.length - 1].postedTime / 1000).toDate();
+    }
+    
+    data.number_of_practice_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Practice")).length;
+    data.number_of_qual_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Qualification")).length;
     
     return data;
 }
@@ -150,13 +158,6 @@ async function getAllEvents(apiKey: string) {
             'X-TBA-Auth-Key': apiKey,
         },
     })).json();
-    
-    // let teamEvents: EventFull[];
-    // if (pastEvents) {
-    //     teamEvents = events;
-    // } else {
-    //     teamEvents = events.filter(event => dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date());
-    // }
     
     var simpleEvents = Promise.all(events
         .map(async (event: EventFull) => ({
