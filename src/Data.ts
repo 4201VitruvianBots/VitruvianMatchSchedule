@@ -1,10 +1,7 @@
 import dayjs from 'dayjs';
 
 // Create a list of 40 random numbers from 1-12000
-let teamNumbers: number[] = [];
-for (let i = 0; i < 39; i++) {
-    teamNumbers.push(randomInt(1, 12000));
-}
+let teamNumbers: number[] = generateUniqueRandomIntegers(1, 12000, 40);
 
 interface TeamMatch {
     match_name: string;
@@ -195,14 +192,16 @@ function getFakeAppData(teamNumber: number) {
     let teamMatches: TeamMatch[] = [];
     for (let i = 0; i < 20; i++) {
         // Get 6 random but unique team numbers from the list teamNumbers
+        let matchTeams: number[] = generateUniqueRandomIntegers(0, 39, 6);
+        
         teamMatches.push({
             match_name: `Practice ${i + 1}`,
-            red1: myTeamNumbers[randomInt(0, 39)],
-            red2: myTeamNumbers[randomInt(0, 39)],
-            red3: myTeamNumbers[randomInt(0, 39)],
-            blue1: myTeamNumbers[randomInt(0, 39)],
-            blue2: myTeamNumbers[randomInt(0, 39)],
-            blue3: myTeamNumbers[randomInt(0, 39)],
+            red1: matchTeams[0],
+            red2: matchTeams[0],
+            red3: matchTeams[0],
+            blue1: matchTeams[0],
+            blue2: matchTeams[0],
+            blue3: matchTeams[0],
             queue_time: dayjs().subtract(1, 'day').add(i*10, 'minute').toDate(),
             start_time: dayjs().subtract(1, 'day').add((i*10)+15, 'minute').toDate(),
             break_after: null,
@@ -223,6 +222,9 @@ function getFakeAppData(teamNumber: number) {
             break_after: null,
         });
     }
+    teamMatches = teamMatches.filter((match: TeamMatch) => {
+        return match.red1 === teamNumber || match.red2 === teamNumber || match.red3 === teamNumber || match.blue1 === teamNumber || match.blue2 === teamNumber || match.blue3 === teamNumber;
+    });
     
     return {
         updated_at: new Date(),
@@ -266,6 +268,19 @@ function randomInt(min: number, max: number) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generateUniqueRandomIntegers(min: number, max: number, count: number): number[] {
+    const numbers = Array.from({length: max - min + 1}, (_, i) => i + min);
+    const result = [];
+
+    for (let i = 0; i < count; i++) {
+        const randomIndex = Math.floor(Math.random() * numbers.length);
+        result.push(numbers[randomIndex]);
+        numbers.splice(randomIndex, 1);
+    }
+
+    return result;
 }
 
 export { getAppData, getRankingData, getAllEvents};

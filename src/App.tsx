@@ -22,11 +22,11 @@ const themes: Record<Theme, string> = {
     gdark: "Generic Dark",
 };
 
-function getTeamIcon(teamNumber: number) {
+function getTeamIcon(team_number: number) {
     return (
-    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
+    <a href={"https://www.thebluealliance.com/team/"+team_number.toString()+"/"+currentYear} target="_blank">
         <img
-        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
+        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+team_number.toString()+".png"}
         onError={(e) => {
             if (e.target) {
                 (e.target as HTMLImageElement).src = defaultIcon;
@@ -36,7 +36,7 @@ function getTeamIcon(teamNumber: number) {
     </a>);
 };
 
-function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
+function getAllianceRow(team_number: number, rank: string, alliance: string) {
     return (
         <div className="flex drop-shadow-4xl mb-1">
             {
@@ -45,8 +45,8 @@ function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
                 <>{/* Dev extends red alliance element length using this one weird trick!*/}</> 
             }
             <div className={alliance === "red" ? "bg-allianceLightRed w-3/5 min-w-max flex p-1 items-center" : "bg-allianceLightBlue w-3/5 flex p-1 items-center"}>
-                {getTeamIcon(teamNumber)}
-                <p className="pl-2">{teamNumber}</p>
+                {getTeamIcon(team_number)}
+                <p className="pl-2">{team_number}</p>
             </div>
             <div className="bg-allianceDarkGray flex p-1 pr-5 items-center min-w-20">
                 <p className="pl-2">{rank}</p>
@@ -56,31 +56,29 @@ function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
 }
 
 function getRankingRow(ranking: RankingData, yourTeam: boolean = false) {
-    const {rank, team_number, wins, losses, ties } = ranking;
-    
     return (
         <tr className={yourTeam ? "bg-gray-800 text-white font-bold" : "odd:bg-gray-300 even:bg-gray-200"}>
-            <td className="border-4 border-gray-400 p-2 pr-5">{rank}</td>
+            <td className="border-4 border-gray-400 p-2 pr-5">{ranking.rank}</td>
             <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
                 <div className="flex items-center">
-                    {getTeamIcon(team_number)}
-                    <p className="pl-2">{team_number}</p>
+                    {getTeamIcon(ranking.team_number)}
+                    <p className="pl-2">{ranking.team_number}</p>
                 </div>
             </td>
             <td className="border-4 border-gray-400 p-2 pl-5">
                 <div className="flex justify-end">
-                    <p className="text-green-700">{wins}</p>
+                    <p className="text-green-700">{ranking.wins}</p>
                     -
-                    <p className="text-red-700">{losses}</p>
+                    <p className="text-red-700">{ranking.losses}</p>
                     -
-                    <p>{ties}</p>
+                    <p>{ranking.ties}</p>
                 </div>
             </td>
         </tr>
     );
 }
 
-function getMatchTable(teamMatch: TeamMatch, teamNumber: number) {
+function getMatchTable(teamMatch: TeamMatch, team_number: number) {
     const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
     
     return (
@@ -88,18 +86,18 @@ function getMatchTable(teamMatch: TeamMatch, teamNumber: number) {
             <tbody>
                 <tr>
                     <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
                     <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
                         <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
                         <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
                     </td>
                 </tr>
                 <tr>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
                 </tr>
             </tbody>
         </table> 
@@ -108,7 +106,7 @@ function getMatchTable(teamMatch: TeamMatch, teamNumber: number) {
 
 function App() {
     // Settings
-    const testMode = false;
+    const testMode = true;
     
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
@@ -204,6 +202,9 @@ function App() {
         }
     }
     
+    // Match list properties
+    const [upcomingExpanded, setUpcomingExpanded] = useState(true);
+    const [previousExpanded, setPreviousExpanded] = useState(true);
     return (
         <main>
             {/* Settings menu */}
@@ -303,15 +304,17 @@ function App() {
                         <p className="text-xl text-gray-600">as of {appData.current_match}</p>
                     </div>
                     <table className="border-4 border-gray-400 text-2xl mx-auto">
+                        <tbody>
                             {Array.isArray(rankingData) && rankingData.slice(0, 8).map((ranking) => (
-                                getRankingRow(ranking, ranking.team_number === teamNumber)
-                            ))}
+                                getRankingRow(ranking, ranking.team_number === teamNumber))
+                            )}
                             <tr className="odd:bg-gray-300 even:bg-gray-200">
                                 <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
                             </tr>
                             {Array.isArray(rankingData) && rankingData.slice(8, 11).map((ranking) => (
-                                getRankingRow(ranking, ranking.team_number === teamNumber)
-                            ))}
+                                getRankingRow(ranking, ranking.team_number === teamNumber))
+                            )}
+                        </tbody>
                     </table> 
                 </div>
                 {/* Next match */}
@@ -358,35 +361,35 @@ function App() {
                 {/* Match list */}
                 <div className="w-[40vw]">
                     <div className="flex flex-col">
-                        <div className="flex justify-between">
+                        <button onClick={() => setUpcomingExpanded(!upcomingExpanded)} className="flex justify-between">
                             <h1 className="text-3xl p-3">Upcoming Matches</h1>
-                            <button className="pr-3">
-                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
-                            </button>
-                        </div>
+                            <MaterialSymbol icon={upcomingExpanded ? "keyboard_arrow_down" : "keyboard_arrow_up"} fill color="black" size={64}/>
+                        </button>
                         
-                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
-                            // Only show matches that are in the future
-                            match.start_time > new Date()
-                        )).map((match) => (
-                            getMatchTable(match, teamNumber)
-                        ))}
+                        <div className={`${previousExpanded ? "max-h-[37vh]" : "max-h-[74vh]"} overflow-y-auto self-stretch`}>
+                            {upcomingExpanded && Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                                // Only show matches that are in the future
+                                match.start_time > new Date()
+                            )).map((match) => (
+                                getMatchTable(match, teamNumber)
+                            ))}
+                        </div>
                     </div>
                     
                     <div className="flex flex-col">
-                        <div className="flex justify-between">
+                        <button onClick={() => setPreviousExpanded(!previousExpanded)} className="flex justify-between">
                             <h1 className="text-3xl p-3">Previous Matches</h1>
-                            <button className="pr-3">
-                                <MaterialSymbol icon="keyboard_arrow_down" fill color="black" size={64}/>
-                            </button>
-                        </div>
+                            <MaterialSymbol icon={previousExpanded ? "keyboard_arrow_down" : "keyboard_arrow_up"} fill color="black" size={64}/>
+                        </button>
                         
-                        {Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
-                            // Only show matches that are in the past
-                            match.start_time < new Date()
-                        )).map((match) => (
-                            getMatchTable(match, teamNumber)
-                        ))}
+                        <div className={`${upcomingExpanded ? "max-h-[37vh]" : "max-h-[74vh]"} overflow-y-auto self-stretch`}>
+                            {previousExpanded && Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
+                                // Only show matches that are in the past
+                                match.start_time < new Date()
+                            )).map((match) => (
+                                getMatchTable(match, teamNumber)
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
