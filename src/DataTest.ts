@@ -8,5 +8,5 @@ const appData = await getAppData(nexusApiKey, "2024cc", 254);
 console.log(appData);
 
 console.log("RankingData: ");
-const rankingData = await getRankingData(tbaApiKey, "2024cala");
+const rankingData = await getRankingData(tbaApiKey, "2024cala", 4201);
 console.log(rankingData);

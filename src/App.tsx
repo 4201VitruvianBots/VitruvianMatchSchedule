@@ -85,27 +85,31 @@ function getMatchTable(teamMatch: TeamMatch, teamNumber: number) {
     
     return (
         <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
-            <tr>
-                <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
-                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
-                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
-                <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
-                <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
-                    <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
-                    <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
-                </td>
-            </tr>
-            <tr>
-                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
-                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
-                <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
+                    <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
+                        <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
+                        <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
+                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
+                </tr>
+            </tbody>
         </table> 
     );
 }
 
 function App() {
     // Settings
+    const testMode = false;
+    
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
     const [teamNumber, setTeamNumber] = useLocalStorage(0, "teamNumber");
@@ -143,17 +147,17 @@ function App() {
     const [appData, setAppData] = useState({} as AppData);
 
     const refreshAppData = () => {
-        getAppData(nexusApiKey, eventKey, teamNumber)
+        getAppData(nexusApiKey, eventKey, teamNumber, testMode)
             .then(data => setAppData(data))
             .catch(error => console.error(error));
         console.log(appData);
     }
     useEffect(refreshAppData, [eventKey]);
     
-    const [rankingData, setRankingData] = useState({} as RankingData);
+    const [rankingData, setRankingData] = useState({} as RankingData[]);
     
     const refreshRankingData = () => {
-        getRankingData(tbaApiKey, eventKey)
+        getRankingData(tbaApiKey, eventKey, teamNumber, testMode)
             .then(data => setRankingData(data))
             .catch(error => console.error(error));
     };
@@ -190,12 +194,12 @@ function App() {
     let nextMatchRankings = ["", "", "", "", "", ""];
     if (Array.isArray(rankingData) && nextMatch) {
         try {
-        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue1).rank.toString();
-        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue2).rank.toString();
-        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue3).rank.toString();
-        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red1).rank.toString();
-        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red2).rank.toString();
-        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red3).rank.toString();
+        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue1)?.rank.toString() || "";
+        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue2)?.rank.toString() || "";
+        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue3)?.rank.toString() || "";
+        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red1)?.rank.toString() || "";
+        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red2)?.rank.toString() || "";
+        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red3)?.rank.toString() || "";
         } catch (error) {
             console.error(error);
         }
@@ -281,7 +285,7 @@ function App() {
                     <p className="text-white text-2xl">Select an event to get started</p>
                     :
                     <>
-                    <p className="text-white text-2xl">{eventName} - Updated {dayjs(appData.updated_at).fromNow()}</p>
+                    <p className="text-white text-2xl">{testMode ? "Test Match" : eventName} - Updated {dayjs(appData.updated_at).fromNow()}</p>
                     <p className="text-white text-2xl">Happening now: {appData.current_match}</p>
                     <p className="text-white text-2xl">Now queueing: {appData.queuing_match}</p>
                     </>
