@@ -150,7 +150,6 @@ function App() {
         getAppData(nexusApiKey, eventKey, teamNumber, testMode)
             .then(data => setAppData(data))
             .catch(error => console.error(error));
-        console.log(appData);
     }
     useEffect(refreshAppData, [eventKey]);
     
