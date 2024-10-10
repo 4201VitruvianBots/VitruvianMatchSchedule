@@ -106,7 +106,7 @@ function getMatchTable(teamMatch: TeamMatch, team_number: number) {
 
 function App() {
     // Settings
-    const testMode = true;
+    const testMode = false;
     
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
@@ -299,23 +299,27 @@ function App() {
             <div className="flex h-[90vh]">
                 {/* Rankings */}
                 <div className="w-[40vw]">
-                    <div className="flex justify-center items-end pb-5">
-                        <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
-                        <p className="text-xl text-gray-600">as of {appData.current_match}</p>
-                    </div>
-                    <table className="border-4 border-gray-400 text-2xl mx-auto">
-                        <tbody>
-                            {Array.isArray(rankingData) && rankingData.slice(0, 8).map((ranking) => (
-                                getRankingRow(ranking, ranking.team_number === teamNumber))
-                            )}
-                            <tr className="odd:bg-gray-300 even:bg-gray-200">
-                                <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
-                            </tr>
-                            {Array.isArray(rankingData) && rankingData.slice(8, 11).map((ranking) => (
-                                getRankingRow(ranking, ranking.team_number === teamNumber))
-                            )}
-                        </tbody>
-                    </table> 
+                    {rankingData.length > 0 ? 
+                    <>
+                        <div className="flex justify-center items-end pb-5">
+                            <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
+                            <p className="text-xl text-gray-600">as of {appData.current_match}</p>
+                        </div>
+                        <table className="border-4 border-gray-400 text-2xl mx-auto">
+                            <tbody>
+                                {rankingData.slice(0, 8).map((ranking) => (
+                                    getRankingRow(ranking, ranking.team_number === teamNumber))
+                                )}
+                                <tr className="odd:bg-gray-300 even:bg-gray-200">
+                                    <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
+                                </tr>
+                                {rankingData.slice(8, 11).map((ranking) => (
+                                    getRankingRow(ranking, ranking.team_number === teamNumber))
+                                )}
+                            </tbody>
+                        </table> 
+                    </> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No rankings available</h1>
+                    }
                 </div>
                 {/* Next match */}
                 <div className="border-l-2 border-r-2 border-gray-500 w-full h-[90vh] flex flex-col items-center">
@@ -360,7 +364,8 @@ function App() {
                 </div>
                 {/* Match list */}
                 <div className="w-[40vw]">
-                    <div className="flex flex-col">
+                    {appData.team_matches && appData.team_matches.length > 0 ? 
+                    <><div className="flex flex-col">
                         <button onClick={() => setUpcomingExpanded(!upcomingExpanded)} className="flex justify-between">
                             <h1 className="text-3xl p-3">Upcoming Matches</h1>
                             <MaterialSymbol icon={upcomingExpanded ? "keyboard_arrow_down" : "keyboard_arrow_up"} fill color="black" size={64}/>
@@ -390,7 +395,8 @@ function App() {
                                 getMatchTable(match, teamNumber)
                             ))}
                         </div>
-                    </div>
+                    </div></> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No matches available</h1>
+                    }
                 </div>
             </div>
             {/* Announcements bar */}
