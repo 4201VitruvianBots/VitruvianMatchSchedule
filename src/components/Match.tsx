@@ -13,7 +13,7 @@ function Match({teamMatch, nextMatch, teamNumber, appData}: {
     
     if (nextMatch !== null) {
         if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Practice")) ||
-            (teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Qual")) ||
+            (teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Qual")) || // TODO: Uncaught TypeError: nextMatch is undefined
             (teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Playoff"))
         ) {
             matchesBetween = parseInt(nextMatch.match_name.split(" ")[1]) - parseInt(teamMatch.match_name.split(" ")[1]) - 1;

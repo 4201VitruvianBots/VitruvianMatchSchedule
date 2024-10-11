@@ -173,7 +173,7 @@ async function getAllEvents(apiKey: string) {
     })).json();
     
     var simpleEvents = Promise.all(events
-        .map(async (event: EventFull) => ({
+        .map(async (event: EventFull) => ({ // TODO: TypeError: events.map is not a function
             key: event.key,
             name: event.name,
             start_date: dayjs(event.start_date).toDate(),

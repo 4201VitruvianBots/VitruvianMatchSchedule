@@ -24,7 +24,7 @@ const themes: Record<Theme, string> = {
 
 function App() {
     // Settings
-    const testMode = true;
+    const testMode = false;
     
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
