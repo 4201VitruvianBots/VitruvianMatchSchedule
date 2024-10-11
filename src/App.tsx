@@ -22,11 +22,11 @@ const themes: Record<Theme, string> = {
     gdark: "Generic Dark",
 };
 
-function getTeamIcon(team_number: number) {
+function getTeamIcon(teamNumber: number) {
     return (
-    <a href={"https://www.thebluealliance.com/team/"+team_number.toString()+"/"+currentYear} target="_blank">
+    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
         <img
-        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+team_number.toString()+".png"}
+        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
         onError={(e) => {
             if (e.target) {
                 (e.target as HTMLImageElement).src = defaultIcon;
@@ -36,7 +36,7 @@ function getTeamIcon(team_number: number) {
     </a>);
 };
 
-function getAllianceRow(team_number: number, rank: string, alliance: string) {
+function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
     return (
         <div className="flex drop-shadow-4xl mb-1">
             {
@@ -45,8 +45,8 @@ function getAllianceRow(team_number: number, rank: string, alliance: string) {
                 <>{/* Dev extends red alliance element length using this one weird trick!*/}</> 
             }
             <div className={alliance === "red" ? "bg-allianceLightRed w-3/5 min-w-max flex p-1 items-center" : "bg-allianceLightBlue w-3/5 flex p-1 items-center"}>
-                {getTeamIcon(team_number)}
-                <p className="pl-2">{team_number}</p>
+                {getTeamIcon(teamNumber)}
+                <p className="pl-2">{teamNumber}</p>
             </div>
             <div className="bg-allianceDarkGray flex p-1 pr-5 items-center min-w-20">
                 <p className="pl-2">{rank}</p>
@@ -76,37 +76,58 @@ function getRankingRow(ranking: RankingData, yourTeam: boolean = false) {
             </td>
         </tr>
     );
-}
+} 
 
-function getMatchTable(teamMatch: TeamMatch, team_number: number) {
+function getMatchTable(teamMatch: TeamMatch, nextMatch: TeamMatch | null, teamNumber: number, appData: AppData) {
     const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
     
+    let matchesBetween = 0;
+    
+    if (nextMatch !== null) {
+        if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Practice")) ||
+            (teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Qual")) ||
+            (teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Playoff"))
+        ) {
+            matchesBetween = parseInt(nextMatch.match_name.split(" ")[1]) - parseInt(teamMatch.match_name.split(" ")[1]) - 1;
+        } else if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Qual"))) {
+            matchesBetween = appData.number_of_practice_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
+        } else if ((teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Playoff"))) {
+            matchesBetween = appData.number_of_qual_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
+        } else if ((teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Final"))) {
+            matchesBetween = appData.number_of_playoff_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
+        }
+    }
+    
     return (
-        <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
-            <tbody>
-                <tr>
-                    <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-red-400 ${team_number === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
-                    <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
-                        <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
-                        <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
-                    </td>
-                </tr>
-                <tr>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
-                    <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${team_number === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
-                </tr>
-            </tbody>
-        </table> 
+        <>
+            <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
+                <tbody>
+                    <tr>
+                        <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
+                        <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
+                            <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
+                            <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {matchesBetween > 0 && <p className="text-center text-lg">︙ {matchesBetween} match{matchesBetween > 1 && "es"}</p>}
+            {teamMatch.break_after && <p className="text-center text-lg">︙ {teamMatch.break_after}</p>}
+        </>
     );
 }
 
 function App() {
     // Settings
-    const testMode = false;
+    const testMode = true;
     
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
@@ -375,8 +396,8 @@ function App() {
                             {upcomingExpanded && Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
                                 // Only show matches that are in the future
                                 match.start_time > new Date()
-                            )).map((match) => (
-                                getMatchTable(match, teamNumber)
+                            )).map((match, i, matches) => (
+                                getMatchTable(match, matches[i+1], teamNumber, appData)
                             ))}
                         </div>
                     </div>
@@ -391,8 +412,8 @@ function App() {
                             {previousExpanded && Array.isArray(appData.team_matches) && appData.team_matches.filter((match) => (
                                 // Only show matches that are in the past
                                 match.start_time < new Date()
-                            )).map((match) => (
-                                getMatchTable(match, teamNumber)
+                            )).map((match, i, matches) => (
+                                getMatchTable(match, matches[i+1], teamNumber, appData)
                             ))}
                         </div>
                     </div></> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No matches available</h1>

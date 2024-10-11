@@ -28,6 +28,7 @@ interface AppData {
     
     number_of_practice_matches: number;
     number_of_qual_matches: number;
+    number_of_playoff_matches: number;
 };
 
 interface RankingData {
@@ -132,6 +133,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         
         data.number_of_practice_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Practice")).length;
         data.number_of_qual_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Qualification")).length;
+        data.number_of_playoff_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Playoff")).length;
     
         return data;
     }
@@ -238,6 +240,7 @@ function getFakeAppData(teamNumber: number) {
         
         number_of_practice_matches: 20,
         number_of_qual_matches: 70,
+        number_of_playoff_matches: 0,
     };
 }
 
