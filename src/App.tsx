@@ -1,6 +1,6 @@
 import topBarLogo from "./assets/top_bar_logo.png";
-import defaultIcon from "./assets/default_icon.png";
 import Timer from "./components/Timer";
+import Match from "./components/Match";
 import 'react-material-symbols/rounded';
 import { MaterialSymbol } from "react-material-symbols";
 import { getAppData, getRankingData, AppData, RankingData, TeamMatch, getAllEvents, Event } from "./Data";
@@ -8,10 +8,10 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useState, useEffect } from "react";
 import { useLocalStorage } from "@tater-archives/react-use-localstorage";
+import RankingRow from "./components/RankingRow";
+import AllianceRow from "./components/AllianceRow";
 
 dayjs.extend(relativeTime);
-
-const currentYear = new Date().getFullYear().toString();
 
 type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
 
@@ -21,109 +21,6 @@ const themes: Record<Theme, string> = {
     glight: "Generic Light",
     gdark: "Generic Dark",
 };
-
-function getTeamIcon(teamNumber: number) {
-    return (
-    <a href={"https://www.thebluealliance.com/team/"+teamNumber.toString()+"/"+currentYear} target="_blank">
-        <img
-        src={"https://www.thebluealliance.com/avatar/"+currentYear+"/frc"+teamNumber.toString()+".png"}
-        onError={(e) => {
-            if (e.target) {
-                (e.target as HTMLImageElement).src = defaultIcon;
-            }
-        }}
-        />
-    </a>);
-};
-
-function getAllianceRow(teamNumber: number, rank: string, alliance: string) {
-    return (
-        <div className="flex drop-shadow-4xl mb-1">
-            {
-                alliance === "red" ?
-                <div className="w-1/4"></div> :
-                <>{/* Dev extends red alliance element length using this one weird trick!*/}</> 
-            }
-            <div className={alliance === "red" ? "bg-allianceLightRed w-3/5 min-w-max flex p-1 items-center" : "bg-allianceLightBlue w-3/5 flex p-1 items-center"}>
-                {getTeamIcon(teamNumber)}
-                <p className="pl-2">{teamNumber}</p>
-            </div>
-            <div className="bg-allianceDarkGray flex p-1 pr-5 items-center min-w-20">
-                <p className="pl-2">{rank}</p>
-            </div>
-        </div>
-    );
-}
-
-function getRankingRow(ranking: RankingData, yourTeam: boolean = false) {
-    return (
-        <tr className={yourTeam ? "bg-gray-800 text-white font-bold" : "odd:bg-gray-300 even:bg-gray-200"}>
-            <td className="border-4 border-gray-400 p-2 pr-5">{ranking.rank}</td>
-            <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
-                <div className="flex items-center">
-                    {getTeamIcon(ranking.team_number)}
-                    <p className="pl-2">{ranking.team_number}</p>
-                </div>
-            </td>
-            <td className="border-4 border-gray-400 p-2 pl-5">
-                <div className="flex justify-end">
-                    <p className="text-green-700">{ranking.wins}</p>
-                    -
-                    <p className="text-red-700">{ranking.losses}</p>
-                    -
-                    <p>{ranking.ties}</p>
-                </div>
-            </td>
-        </tr>
-    );
-} 
-
-function getMatchTable(teamMatch: TeamMatch, nextMatch: TeamMatch | null, teamNumber: number, appData: AppData) {
-    const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
-    
-    let matchesBetween = 0;
-    
-    if (nextMatch !== null) {
-        if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Practice")) ||
-            (teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Qual")) ||
-            (teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Playoff"))
-        ) {
-            matchesBetween = parseInt(nextMatch.match_name.split(" ")[1]) - parseInt(teamMatch.match_name.split(" ")[1]) - 1;
-        } else if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Qual"))) {
-            matchesBetween = appData.number_of_practice_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
-        } else if ((teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Playoff"))) {
-            matchesBetween = appData.number_of_qual_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
-        } else if ((teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Final"))) {
-            matchesBetween = appData.number_of_playoff_matches - parseInt(teamMatch.match_name.split(" ")[1]) + parseInt(nextMatch.match_name.split(" ")[1]) - 1;
-        }
-    }
-    
-    return (
-        <>
-            <table className="border-4 border-gray-400 bg-gray-300 text-lg mx-auto w-[90%]">
-                <tbody>
-                    <tr>
-                        <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
-                        <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
-                            <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
-                            <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
-                    </tr>
-                </tbody>
-            </table>
-            {matchesBetween > 0 && <p className="text-center text-lg">︙ {matchesBetween} match{matchesBetween > 1 && "es"}</p>}
-            {teamMatch.break_after && <p className="text-center text-lg">︙ {teamMatch.break_after}</p>}
-        </>
-    );
-}
 
 function App() {
     // Settings
@@ -329,14 +226,14 @@ function App() {
                         <table className="border-4 border-gray-400 text-2xl mx-auto">
                             <tbody>
                                 {rankingData.slice(0, 8).map((ranking) => (
-                                    getRankingRow(ranking, ranking.team_number === teamNumber))
-                                )}
+                                    <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                ))}
                                 <tr className="odd:bg-gray-300 even:bg-gray-200">
                                     <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
                                 </tr>
                                 {rankingData.slice(8, 11).map((ranking) => (
-                                    getRankingRow(ranking, ranking.team_number === teamNumber))
-                                )}
+                                    <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                ))}
                             </tbody>
                         </table> 
                     </> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No rankings available</h1>
@@ -363,17 +260,17 @@ function App() {
                             
                             <div className="w-[53vw] text-3xl relative items-center flex text-white flex-grow">
                                 <div className="w-1/2 bg-allianceDarkBlue rounded-tl-3xl p-3 min-h-full flex flex-col justify-center">
-                                    {getAllianceRow(nextMatch.blue1, nextMatchRankings[0], "blue")}
-                                    {getAllianceRow(nextMatch.blue2, nextMatchRankings[1], "blue")}
-                                    {getAllianceRow(nextMatch.blue3, nextMatchRankings[2], "blue")}
+                                    <AllianceRow teamNumber={nextMatch.blue1} rank={nextMatchRankings[0]} alliance="blue"/>
+                                    <AllianceRow teamNumber={nextMatch.blue2} rank={nextMatchRankings[1]} alliance="blue"/>
+                                    <AllianceRow teamNumber={nextMatch.blue3} rank={nextMatchRankings[2]} alliance="blue"/>
                                 </div>
                                 <div className="absolute left-1/2 transform -translate-x-1/2 bg-gray-100 drop-shadow-4xl">
                                     <p className="text-3xl text-black p-5 font-bold">VS</p>
                                 </div>
                                 <div className="w-1/2 bg-allianceDarkRed rounded-tr-3xl p-3 min-h-full flex flex-col justify-center">
-                                    {getAllianceRow(nextMatch.red1, nextMatchRankings[3], "red")}
-                                    {getAllianceRow(nextMatch.red2, nextMatchRankings[4], "red")}
-                                    {getAllianceRow(nextMatch.red3, nextMatchRankings[5], "red")}
+                                    <AllianceRow teamNumber={nextMatch.red1} rank={nextMatchRankings[0]} alliance="red"/>
+                                    <AllianceRow teamNumber={nextMatch.red2} rank={nextMatchRankings[1]} alliance="red"/>
+                                    <AllianceRow teamNumber={nextMatch.red3} rank={nextMatchRankings[2]} alliance="red"/>
                                 </div>
                             </div>
                             
@@ -397,7 +294,7 @@ function App() {
                                 // Only show matches that are in the future
                                 match.start_time > new Date()
                             )).map((match, i, matches) => (
-                                getMatchTable(match, matches[i+1], teamNumber, appData)
+                                <Match teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
                             ))}
                         </div>
                     </div>
@@ -413,7 +310,7 @@ function App() {
                                 // Only show matches that are in the past
                                 match.start_time < new Date()
                             )).map((match, i, matches) => (
-                                getMatchTable(match, matches[i+1], teamNumber, appData)
+                                <Match teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
                             ))}
                         </div>
                     </div></> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No matches available</h1>
