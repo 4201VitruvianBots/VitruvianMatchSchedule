@@ -3,7 +3,6 @@ import defaultIcon from "../assets/default_icon.png";
 const currentYear = new Date().getFullYear().toString();
 
 function TeamIcon({teamNumber}: {teamNumber: number}) {
-    
     return (
     <a href={`https://www.thebluealliance.com/team/${teamNumber}/${currentYear}`} target="_blank"> {/* TODO: Uncaught TypeError: teamNumber is undefined */}
         <img

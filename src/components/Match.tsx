@@ -7,11 +7,12 @@ function Match({teamMatch, nextMatch, teamNumber, appData}: {
     teamNumber: number
     appData: AppData
 }) {
+    
     const shortMatchName = teamMatch.match_name.split(" ")[0][0] + teamMatch.match_name.split(" ")[1];
     
     let matchesBetween = 0;
     
-    if (nextMatch !== null) {
+    if (nextMatch !== undefined && nextMatch !== null) {
         if ((teamMatch.match_name.startsWith("Practice") && nextMatch.match_name.startsWith("Practice")) ||
             (teamMatch.match_name.startsWith("Qual") && nextMatch.match_name.startsWith("Qual")) || // TODO: Uncaught TypeError: nextMatch is undefined
             (teamMatch.match_name.startsWith("Playoff") && nextMatch.match_name.startsWith("Playoff"))
