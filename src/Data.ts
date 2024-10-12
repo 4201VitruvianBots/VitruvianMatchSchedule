@@ -135,6 +135,8 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         data.number_of_qual_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Qualification")).length;
         data.number_of_playoff_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Playoff")).length;
     
+        console.log("Refreshed app data at " + dayjs().format("h:mm:ss a"));
+        
         return data;
     }
 }
@@ -159,6 +161,8 @@ async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: n
                 ties: ranking.record.ties,
             };
         });
+        
+        console.log("Refreshed ranking data at " + dayjs().format("h:mm:ss a"));
         
         return convertedRankingData;
     }

@@ -6,8 +6,9 @@ import { MaterialSymbol } from "react-material-symbols";
 import { getAppData, getRankingData, AppData, RankingData, TeamMatch, getAllEvents, Event } from "./Data";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalStorage } from "@tater-archives/react-use-localstorage";
+import { useInterval } from "@tater-archives/react-use-interval";
 import RankingRow from "./components/RankingRow";
 import AllianceRow from "./components/AllianceRow";
 import Switch from "react-switch";
@@ -68,7 +69,7 @@ function App() {
             .then(data => setAppData(data))
             .catch(error => console.error(error));
     }
-    useEffect(refreshAppData, [eventKey, testMode]);
+    useEffect(refreshAppData, [eventKey, testMode, teamNumber]);
     
     const [rankingData, setRankingData] = useState({} as RankingData[]);
     
@@ -77,7 +78,7 @@ function App() {
             .then(data => setRankingData(data))
             .catch(error => console.error(error));
     };
-    useEffect(refreshRankingData, [eventKey, testMode]);
+    useEffect(refreshRankingData, [eventKey, testMode, teamNumber]);
     
     // Timer properties
     let nextMatch: TeamMatch | null = null;
@@ -124,6 +125,14 @@ function App() {
     // Match list properties
     const [upcomingExpanded, setUpcomingExpanded] = useState(true);
     const [previousExpanded, setPreviousExpanded] = useState(true);
+    
+    // Refresh all data every minute
+    useInterval(
+        useCallback(() => {
+            refreshAppData();
+            refreshRankingData();
+        }, []),
+    60000);
     return (
         <main>
             {/* Settings menu */}
