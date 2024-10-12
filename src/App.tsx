@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { useLocalStorage } from "@tater-archives/react-use-localstorage";
 import RankingRow from "./components/RankingRow";
 import AllianceRow from "./components/AllianceRow";
+import Switch from "react-switch";
 
 dayjs.extend(relativeTime);
 
@@ -24,8 +25,6 @@ const themes: Record<Theme, string> = {
 
 function App() {
     // Settings
-    const testMode = false;
-    
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
     const [teamNumber, setTeamNumber] = useLocalStorage(0, "teamNumber");
@@ -59,6 +58,8 @@ function App() {
         setTheme(event.target.value as Theme);
     }
     
+    const [testMode, setTestMode] = useLocalStorage(false, "testMode");
+    
     // App state
     const [appData, setAppData] = useState({} as AppData);
 
@@ -67,7 +68,7 @@ function App() {
             .then(data => setAppData(data))
             .catch(error => console.error(error));
     }
-    useEffect(refreshAppData, [eventKey]);
+    useEffect(refreshAppData, [eventKey, testMode]);
     
     const [rankingData, setRankingData] = useState({} as RankingData[]);
     
@@ -76,7 +77,7 @@ function App() {
             .then(data => setRankingData(data))
             .catch(error => console.error(error));
     };
-    useEffect(refreshRankingData, [eventKey]);
+    useEffect(refreshRankingData, [eventKey, testMode]);
     
     // Timer properties
     let nextMatch: TeamMatch | null = null;
@@ -167,7 +168,7 @@ function App() {
                                 </form>
                             </div>
                             <div className="pl-5">
-                                <input className="bg-gray-200 text-3xl" type="string" value={tbaApiKey} onChange={e => setTbaApiKey(e.target.value)}></input>
+                                <input className="bg-gray-200 text-3xl" type="password" value={tbaApiKey} onChange={e => setTbaApiKey(e.target.value)}></input>
                             </div>
                             <div className="flex items-center">
                                 <h1 className="text-3xl p-5">Nexus API Key</h1>
@@ -178,8 +179,12 @@ function App() {
                                 </form>
                             </div>
                             <div className="pl-5 pb-5">
-                                <input className="bg-gray-200 text-3xl" type="string" value={nexusApiKey} onChange={e => setNexusApiKey(e.target.value)}></input>
+                                <input className="bg-gray-200 text-3xl" type="password" value={nexusApiKey} onChange={e => setNexusApiKey(e.target.value)}></input>
                             </div>
+                            <label className="pl-5 pb-5 flex">
+                               <h1 className="text-3xl pr-5">Test Mode</h1>
+                               <Switch checked={testMode} onChange={setTestMode} uncheckedIcon={false} checkedIcon={false} /> 
+                            </label>
                             <div className="flex justify-center items-center">
                                 <h1 className="text-xl p-5">
                                     Powered by <a href="https://www.thebluealliance.com/" target="_blank" className="text-blue-500 hover:underline">The Blue Alliance</a> and <a href="https://frc.nexus/" target="_blank" className="text-blue-500 hover:underline">Nexus</a>
@@ -223,19 +228,21 @@ function App() {
                             <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
                             <p className="text-xl text-gray-600">as of {appData.current_match}</p>
                         </div>
-                        <table className="border-4 border-gray-400 text-2xl mx-auto">
-                            <tbody>
-                                {rankingData.slice(0, 8).map((ranking) => (
-                                    <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
-                                ))}
-                                <tr className="odd:bg-gray-300 even:bg-gray-200">
-                                    <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
-                                </tr>
-                                {rankingData.slice(8, 11).map((ranking) => (
-                                    <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
-                                ))}
-                            </tbody>
-                        </table> 
+                        <div className="max-h-[80vh] flex flex-col overflow-y-auto">
+                            <table className="border-4 border-gray-400 text-2xl mx-auto">
+                                <tbody>
+                                    {rankingData.slice(0, 8).map((ranking) => (
+                                        <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                    ))}
+                                    <tr className="odd:bg-gray-300 even:bg-gray-200">
+                                        <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
+                                    </tr>
+                                    {rankingData.slice(8).map((ranking) => (
+                                        <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                    ))}
+                                </tbody>
+                            </table> 
+                        </div>
                     </> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No rankings available</h1>
                     }
                 </div>

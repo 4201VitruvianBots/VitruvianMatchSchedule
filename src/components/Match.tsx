@@ -48,8 +48,8 @@ function Match({teamMatch, nextMatch, teamNumber, appData}: {
                     </tr>
                 </tbody>
             </table>
-            {matchesBetween > 0 && <p className="text-center text-lg">︙ {matchesBetween} match{matchesBetween > 1 && "es"}</p>}
-            {teamMatch.break_after && <p className="text-center text-lg">︙ {teamMatch.break_after}</p>}
+            {matchesBetween > 0 && <p className="pl-5 text-lg">︙ {matchesBetween} match{matchesBetween > 1 && "es"}</p>}
+            {teamMatch.break_after && <p className="pl-5 text-lg">︙ {teamMatch.break_after}</p>}
         </>
     );
 }

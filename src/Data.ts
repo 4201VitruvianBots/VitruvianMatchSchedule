@@ -249,7 +249,7 @@ function getFakeRankingData(teamNumber: number) {
     
     let rankingData: RankingData[] = [];
     for (let i = 0; i < 40; i++) {
-        let myNumber = myTeamNumbers[randomInt(0, myTeamNumbers.length)];
+        let myNumber = myTeamNumbers[randomInt(0, myTeamNumbers.length - 1)];
         myTeamNumbers.splice(myTeamNumbers.indexOf(myNumber), 1);
         rankingData.push({
             rank: i + 1,
