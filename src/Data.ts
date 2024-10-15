@@ -110,6 +110,10 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
             };
         });
         
+        // TODO: Check if any of the original matches have a break after them that wasn't transferred to the new most recent match for the team
+        // If so, add the break after to the most recent match
+        // For example: A break after Qual 45, closest match number for the team is Qual 44, so add the break after to Qual 44
+        
         let onFieldMatches = nexusData.matches.filter((match: any) => match.status === 'On field');
         // Don't know why I have to do this condition... Too bad!
         if (onFieldMatches.length === 0) {

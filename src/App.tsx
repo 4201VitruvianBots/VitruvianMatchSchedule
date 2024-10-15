@@ -162,12 +162,12 @@ function App() {
                             <div className="pl-5">
                                 <input className="bg-gray-200 text-3xl max-w-32" type="number" value={teamNumber} onChange={e => setTeamNumber(parseInt(e.target.value))}></input>
                             </div>
-                            <h1 className="text-3xl p-5">Theme</h1>
+                            {/* <h1 className="text-3xl p-5">Theme</h1>
                             <div className="pl-5">
                                 <select className="bg-gray-200 text-3xl max-w-96" value={theme} onChange={handleThemeChange}>
                                     {Object.entries(themes).map(([id, name]) => <option value={id} >{name}</option>)}
                                 </select>
-                            </div>
+                            </div> */}
                             <div className="flex items-center">
                                 <h1 className="text-3xl p-5">TBA API Key</h1>
                                 <form>
@@ -205,6 +205,14 @@ function App() {
                                     <img src="nexusLogo.svg" width={48} className="object-scale-down"/>
                                 </a>
                             </div>
+                            <div className="flex justify-center items-center">
+                                <h1 className="text-xl p-5">
+                                    Developed by <a href="https://www.team4201.org/" target="_blank" className="text-blue-500 hover:underline">FRC Team 4201: The Vitruvian Bots</a>
+                                </h1>
+                                <a href="https://www.team4201.org/" target="_blank" className="pr-5">
+                                    <img src="https://www.thebluealliance.com/avatar/2024/frc4201.png" width={48} className="object-scale-down"/>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,8 +226,8 @@ function App() {
                     :
                     <>
                     <p className="text-white text-2xl">{testMode ? "Test Match" : eventName} - Updated {dayjs(appData.updated_at).fromNow()}</p>
-                    <p className="text-white text-2xl">Happening now: {appData.current_match}</p>
-                    <p className="text-white text-2xl">Now queueing: {appData.queuing_match}</p>
+                    {appData.current_match && <p className="text-white text-2xl">Happening now: {appData.current_match}</p>}
+                    {appData.queuing_match && <p className="text-white text-2xl">Now queueing: {appData.queuing_match}</p>}
                     </>
                 }
                 <div className="flex justify-center w-[11vw] items-center">
