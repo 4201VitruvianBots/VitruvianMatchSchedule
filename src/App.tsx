@@ -15,14 +15,14 @@ import Switch from "react-switch";
 
 dayjs.extend(relativeTime);
 
-type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
+// type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
 
-const themes: Record<Theme, string> = {
-    vlight: "Vitruvian Light",
-    vdark: "Vitruvian Dark",
-    glight: "Generic Light",
-    gdark: "Generic Dark",
-};
+// const themes: Record<Theme, string> = {
+//     vlight: "Vitruvian Light",
+//     vdark: "Vitruvian Dark",
+//     glight: "Generic Light",
+//     gdark: "Generic Dark",
+// };
 
 function App() {
     // Settings
@@ -53,11 +53,11 @@ function App() {
             .catch(error => console.error(error));
     }, [tbaApiKey]);
 
-    const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
+    // const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
 
-    const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setTheme(event.target.value as Theme);
-    }
+    // const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    //     setTheme(event.target.value as Theme);
+    // }
     
     const [testMode, setTestMode] = useLocalStorage(false, "testMode");
     
