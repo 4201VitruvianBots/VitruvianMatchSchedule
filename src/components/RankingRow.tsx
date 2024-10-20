@@ -8,7 +8,7 @@ function RankingRow({ranking, yourTeam}: {ranking: RankingData, yourTeam: boolea
             <td className="border-4 border-gray-400 p-2 pl-3 pr-3">
                 <div className="flex items-center">
                     {<TeamIcon teamNumber={ranking.team_number} />}
-                    <p className="pl-2">{ranking.team_number}</p>
+                    <p className="pl-2">{ranking.team_number_string}</p>
                 </div>
             </td>
             <td className="border-4 border-gray-400 p-2 pl-5">

@@ -34,6 +34,7 @@ interface AppData {
 interface RankingData {
     rank: number;
     team_number: number;
+    team_number_string: string; // Added to account for B teams (TBA only)
     wins: number;
     losses: number;
     ties: number;
@@ -160,6 +161,7 @@ async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: n
             return {
                 rank: ranking.rank,
                 team_number: teamKeyToNumber(ranking.team_key),
+                team_number_string: teamKeyToString(ranking.team_key),
                 wins: ranking.record.wins,
                 losses: ranking.record.losses,
                 ties: ranking.record.ties,
@@ -262,6 +264,7 @@ function getFakeRankingData(teamNumber: number) {
         rankingData.push({
             rank: i + 1,
             team_number: myNumber,
+            team_number_string: myNumber.toString(),
             wins: randomInt(0, 9),
             losses: randomInt(0, 9),
             ties: randomInt(0, 2),
@@ -273,6 +276,10 @@ function getFakeRankingData(teamNumber: number) {
 
 function teamKeyToNumber(teamKey: string) {
     return parseInt(teamKey.substring(3));
+}
+
+function teamKeyToString(teamKey: string) {
+    return teamKey.substring(3);
 }
 
 function randomInt(min: number, max: number) {

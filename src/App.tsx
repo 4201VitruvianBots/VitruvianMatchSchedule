@@ -111,12 +111,12 @@ function App() {
     let nextMatchRankings = ["", "", "", "", "", ""];
     if (Array.isArray(rankingData) && nextMatch) {
         try {
-        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue1)?.rank.toString() || "";
-        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue2)?.rank.toString() || "";
-        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number === nextMatch?.blue3)?.rank.toString() || "";
-        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red1)?.rank.toString() || "";
-        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red2)?.rank.toString() || "";
-        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number === nextMatch?.red3)?.rank.toString() || "";
+        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue1.toString())?.rank.toString() || "";
+        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue2.toString())?.rank.toString() || "";
+        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue3.toString())?.rank.toString() || "";
+        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red1.toString())?.rank.toString() || "";
+        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red2.toString())?.rank.toString() || "";
+        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red3.toString())?.rank.toString() || "";
         } catch (error) {
             console.error(error);
         }
@@ -292,9 +292,9 @@ function App() {
                                     <p className="text-3xl text-black p-5 font-bold">VS</p>
                                 </div>
                                 <div className="w-1/2 bg-allianceDarkRed rounded-tr-3xl p-3 min-h-full flex flex-col justify-center">
-                                    <AllianceRow teamNumber={nextMatch.red1} rank={nextMatchRankings[0]} alliance="red"/>
-                                    <AllianceRow teamNumber={nextMatch.red2} rank={nextMatchRankings[1]} alliance="red"/>
-                                    <AllianceRow teamNumber={nextMatch.red3} rank={nextMatchRankings[2]} alliance="red"/>
+                                    <AllianceRow teamNumber={nextMatch.red1} rank={nextMatchRankings[3]} alliance="red"/>
+                                    <AllianceRow teamNumber={nextMatch.red2} rank={nextMatchRankings[4]} alliance="red"/>
+                                    <AllianceRow teamNumber={nextMatch.red3} rank={nextMatchRankings[5]} alliance="red"/>
                                 </div>
                             </div>
                             
