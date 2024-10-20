@@ -81,58 +81,75 @@ function App() {
     useEffect(refreshRankingData, [eventKey, testMode, teamNumber]);
     
     // Timer properties
-    let nextMatch: TeamMatch | null = null;
-    if (Array.isArray(appData.team_matches)) {
-        nextMatch = appData.team_matches.filter((match) => (
-                match.start_time > new Date()
-        ))[0];
-    } else {
-        nextMatch = null;
-    }
-    
-    let totalMatches = null;
-    if (nextMatch?.match_name.startsWith("Practice")) {
-        totalMatches = appData.number_of_practice_matches;
-    } else if (nextMatch?.match_name.startsWith("Qualification")) {
-        totalMatches = appData.number_of_qual_matches;
-    } else {
-        totalMatches = null;
-    }
-    
-    let redAlliance = null;
-    if (nextMatch?.red1 === teamNumber || nextMatch?.red2 === teamNumber || nextMatch?.red3 === teamNumber) {
-        redAlliance = true;
-    } else if (nextMatch?.blue1 === teamNumber || nextMatch?.blue2 === teamNumber || nextMatch?.blue3 === teamNumber) {
-        redAlliance = false;
-    } else {
-        redAlliance = null;
-    }
-    
-    let nextMatchRankings = ["", "", "", "", "", ""];
-    if (Array.isArray(rankingData) && nextMatch) {
-        try {
-        nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue1.toString())?.rank.toString() || "";
-        nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue2.toString())?.rank.toString() || "";
-        nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue3.toString())?.rank.toString() || "";
-        nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red1.toString())?.rank.toString() || "";
-        nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red2.toString())?.rank.toString() || "";
-        nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red3.toString())?.rank.toString() || "";
-        } catch (error) {
-            console.error(error);
+    const refreshTimerProps = (): [TeamMatch | null, number | null, boolean | null, string[]] => {
+        let nextMatch: TeamMatch | null;
+        let totalMatches: number | null;
+        let redAlliance: boolean | null;
+        let nextMatchRankings: string[] = ["", "", "", "", "", ""];
+        
+        if (Array.isArray(appData.team_matches)) {
+            nextMatch = appData.team_matches.filter((match) => (
+                    match.start_time > new Date()
+            ))[0];
+        } else {
+            nextMatch = null;
         }
+        
+        if (nextMatch?.match_name.startsWith("Practice")) {
+            totalMatches = appData.number_of_practice_matches;
+        } else if (nextMatch?.match_name.startsWith("Qualification")) {
+            totalMatches = appData.number_of_qual_matches;
+        } else {
+            totalMatches = null;
+        }
+        
+        if (nextMatch?.red1 === teamNumber || nextMatch?.red2 === teamNumber || nextMatch?.red3 === teamNumber) {
+            redAlliance = true;
+        } else if (nextMatch?.blue1 === teamNumber || nextMatch?.blue2 === teamNumber || nextMatch?.blue3 === teamNumber) {
+            redAlliance = false;
+        } else {
+            redAlliance = null;
+        }
+        
+        if (Array.isArray(rankingData) && nextMatch) {
+            try {
+                nextMatchRankings[0] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue1.toString())?.rank.toString() || "";
+                nextMatchRankings[1] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue2.toString())?.rank.toString() || "";
+                nextMatchRankings[2] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.blue3.toString())?.rank.toString() || "";
+                nextMatchRankings[3] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red1.toString())?.rank.toString() || "";
+                nextMatchRankings[4] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red2.toString())?.rank.toString() || "";
+                nextMatchRankings[5] = rankingData.find((ranking) => ranking.team_number_string === nextMatch?.red3.toString())?.rank.toString() || "";
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        
+        console.log("Refreshed timer props");
+        
+        return [nextMatch, totalMatches, redAlliance, nextMatchRankings];
     }
+    let [nextMatch, totalMatches, redAlliance, nextMatchRankings] = refreshTimerProps();
+
+    // Refresh timer props every 5 seconds
+    useInterval(
+        useCallback(() => {
+            [nextMatch, totalMatches, redAlliance, nextMatchRankings] = refreshTimerProps();
+        }, []),
+        5000
+    );
     
     // Match list properties
     const [upcomingExpanded, setUpcomingExpanded] = useState(true);
     const [previousExpanded, setPreviousExpanded] = useState(true);
     
-    // Refresh all data every minute
+    // Refresh data every minute
     useInterval(
         useCallback(() => {
             refreshAppData();
             refreshRankingData();
         }, []),
     60000);
+    
     return (
         <main>
             {/* Settings menu */}
