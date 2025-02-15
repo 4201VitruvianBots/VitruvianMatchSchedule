@@ -67,6 +67,7 @@ interface TBAEvent {
     year: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface TBATeam {
     key: string;
     team_number: number;
@@ -95,8 +96,8 @@ interface TBARanking {
 interface NexusMatch {
     label: string;
     status: string;
-    redTeams: string[];
-    blueTeams: string[];
+    redTeams: (string | null)[];
+    blueTeams: (string | null)[];
     times: {
         scheduledStartTime: number | null;
         estimatedQueueTime: number;
@@ -114,8 +115,8 @@ interface NexusMatch {
 async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: number, testMode: boolean = false) {
     if (testMode) {
         return getFakeAppData(teamNumber);
-    } else if (eventKey === "") {
-        // Return empty data if no event key is provided
+    } else if (nexusApiKey === "" || eventKey === "") {
+        // Return empty data if invalid keys are provided
         return {} as AppData;
     } else {
         const data: AppData = {} as AppData;
@@ -136,12 +137,12 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         data.team_matches = teamMatches.map((match: NexusMatch) => {
             return {
                 match_name: match.label,
-                red1: parseInt(match.redTeams[0]),
-                red2: parseInt(match.redTeams[1]),
-                red3: parseInt(match.redTeams[2]),
-                blue1: parseInt(match.blueTeams[0]),
-                blue2: parseInt(match.blueTeams[1]),
-                blue3: parseInt(match.blueTeams[2]),
+                red1: parseInt(match.redTeams[0]? match.redTeams[0] : ""),
+                red2: parseInt(match.redTeams[1]? match.redTeams[1] : ""),
+                red3: parseInt(match.redTeams[2]? match.redTeams[2] : ""),
+                blue1: parseInt(match.blueTeams[0]? match.blueTeams[0] : ""),
+                blue2: parseInt(match.blueTeams[1]? match.blueTeams[1] : ""),
+                blue3: parseInt(match.blueTeams[2]? match.blueTeams[2] : ""),
                 queue_time: dayjs.unix(match.times.estimatedQueueTime / 1000).toDate(),
                 start_time: dayjs.unix(match.times.estimatedStartTime / 1000).toDate(),
                 break_after: match.breakAfter,
@@ -186,6 +187,9 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
 async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: number, testMode: boolean = false) {
     if (testMode) {
         return getFakeRankingData(teamNumber);
+    } else if (tbaApiKey === "" || eventKey === "") {
+        // Return empty data if invalid keys are provided
+        return {} as RankingData[];
     } else {
         const rankingResponse = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}/rankings`, {
             headers: {
@@ -211,28 +215,28 @@ async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: n
     }
 }
 
-async function getAllEvents(apiKey: string) {
-    const currentYear = new Date().getFullYear();
-    const events: TBAEvent[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
-        headers: {
-            'X-TBA-Auth-Key': apiKey,
-        },
-    })).json();
-    
-    const simpleEvents = Promise.all(events
-        .map(async (event: TBAEvent) => ({ // TODO: TypeError: events.map is not a function
-            key: event.key,
-            name: event.name,
-            start_date: dayjs(event.start_date).toDate(),
-            end_date: dayjs(event.end_date).toDate(),
-            teams: (await (await fetch(`https://www.thebluealliance.com/api/v3/event/${event.key}/teams/simple`, {
-                headers: {
-                    'X-TBA-Auth-Key': apiKey,
-                },
+async function getAllEvents(tbaApiKey: string) {
+    if (tbaApiKey === "") {
+        return [] as Event[];
+    } else {
+        const currentYear = new Date().getFullYear();
+        const eventResponse = await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
+            headers: {
+                'X-TBA-Auth-Key': tbaApiKey,
             },
-            )).json() as TBATeam[]).map(team => team.team_number),
-        } as Event)));
-    return simpleEvents;
+        })
+        const eventData: TBAEvent[] = await eventResponse.json();
+        
+        const simpleEvents = Promise.all(eventData
+            .map(async (event: TBAEvent) => ({
+                key: event.key,
+                name: event.name,
+                start_date: dayjs(event.start_date).toDate(),
+                end_date: dayjs(event.end_date).toDate(),
+                teams: [],
+            } as Event)));
+        return simpleEvents;
+    }
 }
 
 function getFakeAppData(teamNumber: number) {

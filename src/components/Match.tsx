@@ -33,18 +33,18 @@ function Match({teamMatch, nextMatch, teamNumber, appData}: {
                 <tbody>
                     <tr>
                         <td className="border-4 border-gray-400 p-2 pr-5 align-top" rowSpan={2}>{shortMatchName}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{teamMatch.red1}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{teamMatch.red2}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{teamMatch.red3}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red1 ? 'font-bold' : ''}`}>{isNaN(teamMatch.red1) ? 'TBD' : teamMatch.red1}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red2 ? 'font-bold' : ''}`}>{isNaN(teamMatch.red2) ? 'TBD' : teamMatch.red2}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-red-400 ${teamNumber === teamMatch.red3 ? 'font-bold' : ''}`}>{isNaN(teamMatch.red3) ? 'TBD' : teamMatch.red3}</td>
                         <td className="border-4 border-gray-400 p-2 align-top" rowSpan={2}>
                             <p>Q {dayjs(teamMatch.queue_time).format("h:mm")}</p>
                             <p>S {dayjs(teamMatch.start_time).format("h:mm")}</p>
                         </td>
                     </tr>
                     <tr>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{teamMatch.blue1}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{teamMatch.blue2}</td>
-                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{teamMatch.blue3}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue1 ? 'font-bold' : ''}`}>{isNaN(teamMatch.blue1) ? 'TBD' : teamMatch.blue1}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue2 ? 'font-bold' : ''}`}>{isNaN(teamMatch.blue2) ? 'TBD' : teamMatch.blue2}</td>
+                        <td className={`border-4 border-gray-400 p-2 bg-blue-400 ${teamNumber === teamMatch.blue3 ? 'font-bold' : ''}`}>{isNaN(teamMatch.blue3) ? 'TBD' : teamMatch.blue3}</td>
                     </tr>
                 </tbody>
             </table>
