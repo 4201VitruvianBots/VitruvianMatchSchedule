@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 // Create a list of 40 random numbers from 1-12000
-let teamNumbers: number[] = generateUniqueRandomIntegers(1, 12000, 40);
+const teamNumbers: number[] = generateUniqueRandomIntegers(1, 12000, 40);
 
 interface TeamMatch {
     match_name: string;
@@ -29,7 +29,7 @@ interface AppData {
     number_of_practice_matches: number;
     number_of_qual_matches: number;
     number_of_playoff_matches: number;
-};
+}
 
 interface RankingData {
     rank: number;
@@ -48,7 +48,7 @@ interface Event {
     teams: number[];
 }
 
-interface EventFull {
+interface TBAEvent {
     key: string;
     name: string;
     event_code: string;
@@ -67,7 +67,7 @@ interface EventFull {
     year: number;
 }
 
-interface Team {
+interface TBATeam {
     key: string;
     team_number: number;
     nickname: string;
@@ -77,11 +77,48 @@ interface Team {
     country: string;
 }
 
+interface TBARanking {
+    matches_played: number;
+    qual_average: number;
+    extra_stats: number[];
+    sort_orders: number[];
+    record: {
+        losses: number;
+        wins: number;
+        ties: number;
+    };
+    rank: number;
+    dq: number;
+    team_key: string;
+}
+
+interface NexusMatch {
+    label: string;
+    status: string;
+    redTeams: string[];
+    blueTeams: string[];
+    times: {
+        scheduledStartTime: number | null;
+        estimatedQueueTime: number;
+        estimatedOnDeckTime: number | null;
+        estimatedOnFieldTime: number | null;
+        estimatedStartTime: number;
+        actualQueueTime: number | null;
+        actualOnDeckTime: number | null;
+        actualOnFieldTime: number | null;
+    };
+    breakAfter: string | null;
+    replayOf: string | null;
+}
+
 async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: number, testMode: boolean = false) {
     if (testMode) {
         return getFakeAppData(teamNumber);
+    } else if (eventKey === "") {
+        // Return empty data if no event key is provided
+        return {} as AppData;
     } else {
-        let data: AppData = {} as AppData;
+        const data: AppData = {} as AppData;
         const nexusResponse = await fetch(`https://frc.nexus/api/v1/event/${eventKey}`, {
             method: 'GET',
             headers: {
@@ -92,11 +129,11 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
 
         data.updated_at = dayjs.unix(nexusData.dataAsOfTime / 1000).toDate();
         
-        const teamMatches = nexusData.matches.filter((match: any) => {
+        const teamMatches = nexusData.matches.filter((match: NexusMatch) => {
             return match.redTeams.includes(teamNumber.toString()) || match.blueTeams.includes(teamNumber.toString());
         });
         
-        data.team_matches = teamMatches.map((match: any) => {
+        data.team_matches = teamMatches.map((match: NexusMatch) => {
             return {
                 match_name: match.label,
                 red1: parseInt(match.redTeams[0]),
@@ -115,7 +152,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
         // If so, add the break after to the most recent match
         // For example: A break after Qual 45, closest match number for the team is Qual 44, so add the break after to Qual 44
         
-        let onFieldMatches = nexusData.matches.filter((match: any) => match.status === 'On field');
+        const onFieldMatches = nexusData.matches.filter((match: NexusMatch) => match.status === 'On field');
         // Don't know why I have to do this condition... Too bad!
         if (onFieldMatches.length === 0) {
             data.current_match = onFieldMatches.label;
@@ -123,7 +160,7 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
             data.current_match = onFieldMatches[onFieldMatches.length - 1].label;
         }
         
-        let queuingMatches = nexusData.matches.filter((match: any) => match.status === 'Now queuing');
+        const queuingMatches = nexusData.matches.filter((match: NexusMatch) => match.status === 'Now queuing');
         // Don't know why I have to do this condition... Too bad!
         if (queuingMatches.length === 0) {
             data.queuing_match = queuingMatches.label;
@@ -136,9 +173,9 @@ async function getAppData(nexusApiKey: string, eventKey: string, teamNumber: num
             data.announcement_sent_at = dayjs.unix(nexusData.announcements[nexusData.announcements.length - 1].postedTime / 1000).toDate();
         }
         
-        data.number_of_practice_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Practice")).length;
-        data.number_of_qual_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Qualification")).length;
-        data.number_of_playoff_matches = nexusData.matches.filter((match: any) => match.label.startsWith("Playoff")).length;
+        data.number_of_practice_matches = nexusData.matches.filter((match: NexusMatch) => match.label.startsWith("Practice")).length;
+        data.number_of_qual_matches = nexusData.matches.filter((match: NexusMatch) => match.label.startsWith("Qualification")).length;
+        data.number_of_playoff_matches = nexusData.matches.filter((match: NexusMatch) => match.label.startsWith("Playoff")).length;
     
         console.log("Refreshed app data at " + dayjs().format("h:mm:ss a"));
         
@@ -157,7 +194,7 @@ async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: n
         });
         const rankingData = await rankingResponse.json();
         
-        const convertedRankingData: RankingData[] = rankingData.rankings.map((ranking: any) => {
+        const convertedRankingData: RankingData[] = rankingData.rankings.map((ranking: TBARanking) => {
             return {
                 rank: ranking.rank,
                 team_number: teamKeyToNumber(ranking.team_key),
@@ -176,14 +213,14 @@ async function getRankingData(tbaApiKey: string, eventKey: string, teamNumber: n
 
 async function getAllEvents(apiKey: string) {
     const currentYear = new Date().getFullYear();
-    const events: EventFull[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
+    const events: TBAEvent[] = await (await fetch(`https://www.thebluealliance.com/api/v3/events/${currentYear}/simple`, {
         headers: {
             'X-TBA-Auth-Key': apiKey,
         },
     })).json();
     
-    var simpleEvents = Promise.all(events
-        .map(async (event: EventFull) => ({ // TODO: TypeError: events.map is not a function
+    const simpleEvents = Promise.all(events
+        .map(async (event: TBAEvent) => ({ // TODO: TypeError: events.map is not a function
             key: event.key,
             name: event.name,
             start_date: dayjs(event.start_date).toDate(),
@@ -193,7 +230,7 @@ async function getAllEvents(apiKey: string) {
                     'X-TBA-Auth-Key': apiKey,
                 },
             },
-            )).json() as Team[]).map(team => team.team_number),
+            )).json() as TBATeam[]).map(team => team.team_number),
         } as Event)));
     return simpleEvents;
 }
@@ -204,7 +241,7 @@ function getFakeAppData(teamNumber: number) {
     let teamMatches: TeamMatch[] = [];
     for (let i = 0; i < 20; i++) {
         // Get 6 random but unique team numbers from the list teamNumbers
-        let matchTeams: number[] = generateUniqueRandomIntegers(0, 39, 6);
+        const matchTeams: number[] = generateUniqueRandomIntegers(0, 39, 6);
         
         teamMatches.push({
             match_name: `Practice ${i + 1}`,
@@ -257,9 +294,9 @@ function getFakeAppData(teamNumber: number) {
 function getFakeRankingData(teamNumber: number) {
     const myTeamNumbers = [teamNumber, ...teamNumbers];
     
-    let rankingData: RankingData[] = [];
+    const rankingData: RankingData[] = [];
     for (let i = 0; i < 40; i++) {
-        let myNumber = myTeamNumbers[randomInt(0, myTeamNumbers.length - 1)];
+        const myNumber = myTeamNumbers[randomInt(0, myTeamNumbers.length - 1)];
         myTeamNumbers.splice(myTeamNumbers.indexOf(myNumber), 1);
         rankingData.push({
             rank: i + 1,

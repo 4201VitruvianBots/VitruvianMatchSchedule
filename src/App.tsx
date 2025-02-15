@@ -85,7 +85,7 @@ function App() {
         let nextMatch: TeamMatch | null;
         let totalMatches: number | null;
         let redAlliance: boolean | null;
-        let nextMatchRankings: string[] = ["", "", "", "", "", ""];
+        const nextMatchRankings: string[] = ["", "", "", "", "", ""];
         
         if (Array.isArray(appData.team_matches)) {
             nextMatch = appData.team_matches.filter((match) => (
