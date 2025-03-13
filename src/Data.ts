@@ -67,17 +67,6 @@ interface TBAEvent {
     year: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface TBATeam {
-    key: string;
-    team_number: number;
-    nickname: string;
-    name: string;
-    city: string;
-    state_prov: string;
-    country: string;
-}
-
 interface TBARanking {
     matches_played: number;
     qual_average: number;

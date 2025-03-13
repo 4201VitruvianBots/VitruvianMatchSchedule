@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import topBarLogo from "./assets/top_bar_logo.png";
 import Timer from "./components/Timer";
 import Match from "./components/Match";
@@ -51,7 +52,7 @@ function App() {
         getAllEvents(tbaApiKey)
             .then(events => setEvents([baseEvent, ...events]))
             .catch(error => console.error(error));
-    }, [tbaApiKey]);
+    }, [baseEvent, tbaApiKey]);
 
     // const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
 
