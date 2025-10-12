@@ -241,7 +241,7 @@ function App() {
                                     Developed by <a href="https://www.team4201.org/" target="_blank" className="text-blue-500 hover:underline">FRC Team 4201: The Vitruvian Bots</a>
                                 </h1>
                                 <a href="https://www.team4201.org/" target="_blank" className="pr-5">
-                                    <img src="https://www.thebluealliance.com/avatar/2024/frc4201.png" width={48} className="object-scale-down"/>
+                                    <img src={"https://www.thebluealliance.com/avatar/"+dayjs().year().toString()+"/frc4201.png"} width={48} className="object-scale-down"/>
                                 </a>
                             </div>
                         </div>
