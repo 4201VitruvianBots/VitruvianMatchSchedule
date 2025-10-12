@@ -18,6 +18,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-material-symbols": "^4.4.0",
+    "react-screen-wake-lock": "^3.1.1",
     "react-select-search": "^4.1.7",
     "react-switch": "^7.0.0",
     "tailwindcss": "^3.4.1",

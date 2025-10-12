@@ -13,6 +13,7 @@ import { useInterval } from "@tater-archives/react-use-interval";
 import RankingRow from "./components/RankingRow";
 import AllianceRow from "./components/AllianceRow";
 import Switch from "react-switch";
+import { useWakeLock } from 'react-screen-wake-lock';
 
 dayjs.extend(relativeTime);
 
@@ -26,6 +27,20 @@ dayjs.extend(relativeTime);
 // };
 
 function App() {
+    // Prevent computer from sleeping while app is open
+    const { isSupported, released, request, release } = useWakeLock();
+
+    useEffect(() => {
+        if (isSupported) {
+            request().catch((error) => console.error("Failed to acquire wake lock:", error));
+        }
+        return () => {
+            if (released === false) {
+                release().catch((error) => console.error("Failed to release wake lock:", error));
+            }
+        };
+    }, [isSupported, request, release, released]);
+    
     // Settings
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [showPastEvents, setShowPastEvents] = useState(false);
@@ -124,8 +139,6 @@ function App() {
                 console.error(error);
             }
         }
-        
-        console.log("Refreshed timer props");
         
         return [nextMatch, totalMatches, redAlliance, nextMatchRankings];
     }
@@ -261,7 +274,7 @@ function App() {
                     <>
                         <div className="flex justify-center items-end pb-5">
                             <h1 className="text-3xl p-3 pb-1 pr-5">Rankings</h1>
-                            <p className="text-xl text-gray-600">as of {appData.current_match}</p>
+                            {appData.current_match && <p className="text-xl text-gray-600">as of {appData.current_match}</p>}
                         </div>
                         <div className="max-h-[80vh] flex flex-col overflow-y-auto">
                             <table className="border-4 border-gray-400 text-2xl mx-auto">
