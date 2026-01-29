@@ -19,6 +19,15 @@ dayjs.extend(relativeTime);
 
 // type Theme = 'glight' | 'gdark' | 'vlight' | 'vdark';
 
+// Stable default event object used as the initial option in the event selector.
+const BASE_EVENT: Event = {
+    key: "",
+    name: "Select an event",
+    start_date: new Date(),
+    end_date: new Date(),
+    teams: [],
+};
+
 // const themes: Record<Theme, string> = {
 //     vlight: "Vitruvian Light",
 //     vdark: "Vitruvian Dark",
@@ -28,18 +37,11 @@ dayjs.extend(relativeTime);
 
 function App() {
     // Prevent computer from sleeping while app is open
-    const { isSupported, released, request, release } = useWakeLock();
+    const { isSupported, request, released } = useWakeLock();
 
-    useEffect(() => {
-        if (isSupported) {
-            request().catch((error) => console.error("Failed to acquire wake lock:", error));
-        }
-        return () => {
-            if (released === false) {
-                release().catch((error) => console.error("Failed to release wake lock:", error));
-            }
-        };
-    }, [isSupported, request, release, released]);
+    if (isSupported && released === true) {
+        request().catch((error) => console.error("Failed to acquire wake lock:", error));
+    }
     
     // Settings
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -55,19 +57,12 @@ function App() {
         setEventName(event.target.selectedOptions[0].text);
     };
     
-    const baseEvent: Event = {
-        key: "",
-        name: "Select an event",
-        start_date: new Date(),
-        end_date: new Date(),
-        teams: [],
-    };
-    const [events, setEvents] = useState([baseEvent] as Event[]);
+    const [events, setEvents] = useState([BASE_EVENT] as Event[]);
     useEffect(() => {
         getAllEvents(tbaApiKey)
-            .then(events => setEvents([baseEvent, ...events]))
+            .then(events => setEvents([BASE_EVENT, ...events]))
             .catch(error => console.error(error));
-    }, [baseEvent, tbaApiKey]);
+    }, [tbaApiKey]);
 
     // const [theme, setTheme] = useLocalStorage<Theme>('vlight', 'theme');
 
@@ -182,7 +177,9 @@ function App() {
                             <h1 className="text-3xl p-5">Event</h1>
                             <div className="pl-5 pb-5">
                                 <select className="bg-gray-200 text-3xl max-w-96" value={eventKey} onChange={handleEventSelectChange}>
-                                    {events.filter(event => showPastEvents || (dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())).map((event) => <option value={event.key}>{event.name}</option>)}
+                                    {events.filter(event => showPastEvents || (dayjs(event.start_date).subtract(1, "day").toDate() <= new Date() && dayjs(event.end_date).add(1, "day").toDate() >= new Date())).map((event) => (
+                                        <option key={event.key} value={event.key}>{event.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="pl-5">
@@ -280,13 +277,13 @@ function App() {
                             <table className="border-4 border-gray-400 text-2xl mx-auto">
                                 <tbody>
                                     {rankingData.slice(0, 8).map((ranking) => (
-                                        <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                        <RankingRow key={ranking.team_number} ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
                                     ))}
                                     <tr className="odd:bg-gray-300 even:bg-gray-200">
                                         <td className="border-4 border-gray-400 p-2 pr-5 text-center" colSpan={3}>↑ Alliance captains ↑</td>
                                     </tr>
                                     {rankingData.slice(8).map((ranking) => (
-                                        <RankingRow ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
+                                        <RankingRow key={ranking.team_number} ranking={ranking} yourTeam={ranking.team_number === teamNumber} />
                                     ))}
                                 </tbody>
                             </table> 
@@ -349,7 +346,7 @@ function App() {
                                 // Only show matches that are in the future
                                 match.start_time > new Date()
                             )).map((match, i, matches) => (
-                                <Match teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
+                                <Match key={`${match.match_name}-${match.start_time.getTime()}`} teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
                             ))}
                         </div>
                     </div>
@@ -365,7 +362,7 @@ function App() {
                                 // Only show matches that are in the past
                                 match.start_time < new Date()
                             )).map((match, i, matches) => (
-                                <Match teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
+                                <Match key={`${match.match_name}-${match.start_time.getTime()}`} teamMatch={match} nextMatch={matches[i+1]} teamNumber={teamNumber} appData={appData} />
                             ))}
                         </div>
                     </div></> : <h1 className="text-3xl p-3 pb-1 pr-5 text-center">No matches available</h1>
